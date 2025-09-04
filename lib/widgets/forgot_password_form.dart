@@ -74,7 +74,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
               controller: _recoveryPhraseController,
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.email_outlined, color: Colors.grey),
-                hintText: 'Sua palavra recuperação',
+                hintText: 'Sua palavra de recuperação',
                 hintStyle: TextStyle(color: Colors.grey),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
