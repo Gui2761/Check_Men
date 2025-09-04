@@ -148,7 +148,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                     controller: _recoveryPhraseController,
                     decoration: const InputDecoration(
                       prefixIcon: Icon(Icons.email_outlined, color: Colors.grey),
-                      hintText: 'Digite sua palavra recuperação',
+                      hintText: 'Digite sua palavra de recuperação',
                       hintStyle: TextStyle(color: Colors.grey),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
