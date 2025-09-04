@@ -21,4 +21,3 @@ Promover um recurso digital que auxilie homens a cuidarem melhor de sua saúde, 
 
 ## 📌 Status do projeto  
 O frontend está em fase inicial de desenvolvimento, sendo atualizado continuamente com novas telas, componentes e melhorias de design. Futuramente, será integrado ao backend para garantir funcionalidades completas, como autenticação, armazenamento de dados e notificações personalizadas.
->>>>>>> 6d1b4ba3b836b276430204927272ca619807ecbe
