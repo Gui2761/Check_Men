@@ -1,21 +1,4 @@
-<<<<<<< HEAD
-# checkmen
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-=======
 # App de Saúde Masculina 🩺💪  
 
 Este repositório contém o *frontend desenvolvido em Flutter* para um aplicativo voltado à *saúde masculina, com foco em bem-estar, prevenção e acompanhamento de hábitos de vida. O projeto foi criado com o objetivo de oferecer uma interface **intuitiva, responsiva e moderna, priorizando a **experiência do usuário* e a *acessibilidade* em diferentes dispositivos móveis.  
