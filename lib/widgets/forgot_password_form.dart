@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class ForgotPasswordForm extends StatefulWidget {
   const ForgotPasswordForm({super.key});
@@ -74,7 +75,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
               controller: _recoveryPhraseController,
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.email_outlined, color: Colors.grey),
-                hintText: 'Sua palavra de recuperação',
+                hintText: 'Sua palavra recuperação',
                 hintStyle: TextStyle(color: Colors.grey),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),

@@ -2,43 +2,37 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class AuthService {
-  final String _baseUrl = 'https://seusite.com/api'; // Substitua pela sua URL base
+  final String _baseUrl = 'https://sua-api.com';
 
   Future<http.Response> login(String email, String password) async {
-    return await http.post(
-      Uri.parse('$_baseUrl/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'email': email, 'password': password}),
-    );
+    final uri = Uri.parse('$_baseUrl/auth/login');
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({'email': email, 'password': password});
+    return await http.post(uri, headers: headers, body: body);
   }
 
   Future<http.Response> register(String email, String password, String recoveryPhrase) async {
-    return await http.post(
-      Uri.parse('$_baseUrl/register'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'email': email,
-        'password': password,
-        'recoveryPhrase': recoveryPhrase,
-      }),
-    );
+    final uri = Uri.parse('$_baseUrl/auth/register');
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({
+      'email': email,
+      'password': password,
+      'recoveryPhrase': recoveryPhrase
+    });
+    return await http.post(uri, headers: headers, body: body);
   }
 
   Future<http.Response> forgotPassword(String recoveryPhrase) async {
-    return await http.post(
-      Uri.parse('$_baseUrl/forgot-password'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'recoveryPhrase': recoveryPhrase}),
-    );
+    final uri = Uri.parse('$_baseUrl/auth/forgot-password');
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({'recoveryPhrase': recoveryPhrase});
+    return await http.post(uri, headers: headers, body: body);
   }
 
   Future<http.Response> resetPassword(String newPassword) async {
-    // Nota: Em um cenário real, você provavelmente precisaria enviar também
-    // o token de recuperação ou a frase de volta.
-    return await http.post(
-      Uri.parse('$_baseUrl/reset-password'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'newPassword': newPassword}),
-    );
+    final uri = Uri.parse('$_baseUrl/auth/reset-password');
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({'newPassword': newPassword});
+    return await http.post(uri, headers: headers, body: body);
   }
 }

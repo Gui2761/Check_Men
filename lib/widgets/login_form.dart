@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../screens/Saude_Homem_Screen.dart';
 import 'dart:convert';
-
+import 'package:http/http.dart' as http;
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -30,7 +31,10 @@ class _LoginFormState extends State<LoginForm> {
     final response = await auth.login(_emailController.text, _passwordController.text);
     if (response.statusCode >= 200 && response.statusCode < 300) {
       _showSnackbar('Login realizado com sucesso!');
-      auth.backToInitialScreen(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SaudeHomemScreen()),
+      );
     } else {
       final data = json.decode(response.body);
       _showSnackbar('Erro: ${data['message']}', isError: true);

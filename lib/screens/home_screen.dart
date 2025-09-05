@@ -13,7 +13,6 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     
-    // Altura da caixa, ajustada para os valores anteriores
     final double boxHeight = auth.isRegistrationBoxVisible ? 550 : 500;
     
     Widget currentBoxContent;
@@ -31,7 +30,7 @@ class HomeScreen extends StatelessWidget {
     if (auth.isLoginBoxVisible || auth.isForgotPasswordBoxVisible || auth.isNewPasswordBoxVisible) {
       boxPosition = 0;
     } else if (auth.isRegistrationBoxVisible) {
-      boxPosition = -30;
+      boxPosition = 30; 
     } else {
       boxPosition = -500;
     }

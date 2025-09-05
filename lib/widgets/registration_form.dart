@@ -1,5 +1,3 @@
-// lib/widgets/registration_form.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -63,7 +61,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
     final auth = Provider.of<AuthProvider>(context);
     return Padding(
       padding: const EdgeInsets.all(24.0),
-      // Envolvemos a coluna com SingleChildScrollView
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,7 +145,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                     controller: _recoveryPhraseController,
                     decoration: const InputDecoration(
                       prefixIcon: Icon(Icons.email_outlined, color: Colors.grey),
-                      hintText: 'Digite sua palavra de recuperação',
+                      hintText: 'Digite sua palavra recuperação',
                       hintStyle: TextStyle(color: Colors.grey),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
