@@ -1,15 +1,22 @@
+// lib/main.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'screens/home_screen.dart';
-import 'package:flutter_localizations/flutter_localizations.dart'; // Adicione esta importação
+import 'screens/Saude_Homem_Screen.dart'; // Adicione esta importação
+import 'package:flutter_localizations/flutter_localizations.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Adicione esta linha
+  final authProvider = AuthProvider();
+  final isLoggedIn = await authProvider.loadLoginState();
+  runApp(MyApp(isLoggedIn: isLoggedIn));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+  const MyApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +35,7 @@ class MyApp extends StatelessWidget {
         supportedLocales: const [
           Locale('pt', 'BR'),
         ],
-        home: const HomeScreen(),
+        home: isLoggedIn ? const SaudeHomemScreen() : const HomeScreen(),
       ),
     );
   }

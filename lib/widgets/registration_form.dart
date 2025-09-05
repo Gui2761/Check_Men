@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class RegistrationForm extends StatefulWidget {
   const RegistrationForm({super.key});
@@ -29,10 +30,19 @@ class _RegistrationFormState extends State<RegistrationForm> {
 
   void _submit() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
+
+    // Validação do formato do e-mail (NOVA VERIFICAÇÃO)
+    if (!RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(_emailController.text)) {
+      _showSnackbar('Por favor, insira um e-mail válido.', isError: true);
+      return;
+    }
+
     if (_passwordController.text != _confirmPasswordController.text) {
       _showSnackbar('As senhas não coincidem.', isError: true);
       return;
     }
+    
+    // O resto do código permanece o mesmo
     final response = await auth.register(
       _emailController.text,
       _passwordController.text,

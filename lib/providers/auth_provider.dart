@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -59,11 +60,33 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
   
+  Future<void> saveLoginState(bool isLoggedIn) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', isLoggedIn);
+  }
+
+  Future<bool> loadLoginState() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isLoggedIn') ?? false;
+  }
+  
+  void logout() async {
+    await saveLoginState(false);
+    _isLoginBoxVisible = false;
+    _isRegistrationBoxVisible = false;
+    _isForgotPasswordBoxVisible = false;
+    _isNewPasswordBoxVisible = false;
+    notifyListeners();
+  }
+  
   Future<http.Response> login(String email, String password) async {
     _isLoading = true;
     notifyListeners();
     try {
       final response = await _authService.login(email, password);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        await saveLoginState(true);
+      }
       return response;
     } finally {
       _isLoading = false;
@@ -83,11 +106,11 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<http.Response> forgotPassword(String recoveryPhrase) async {
+  Future<http.Response> forgotPassword(String email, String recoveryPhrase) async {
     _isLoading = true;
     notifyListeners();
     try {
-      final response = await _authService.forgotPassword(recoveryPhrase);
+      final response = await _authService.forgotPassword(email, recoveryPhrase);
       return response;
     } finally {
       _isLoading = false;

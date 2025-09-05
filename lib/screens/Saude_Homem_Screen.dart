@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import '../screens/home_screen.dart';
 
 class SaudeHomemScreen extends StatefulWidget {
   const SaudeHomemScreen({super.key});
@@ -82,6 +85,25 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
               title: const Text('Notícias'),
               onTap: () {
                 Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Configurações'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            // NOVO BOTÃO
+            ListTile(
+              leading: const Icon(Icons.exit_to_app),
+              title: const Text('Sair'),
+              onTap: () {
+                Provider.of<AuthProvider>(context, listen: false).logout();
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  (Route<dynamic> route) => false,
+                );
               },
             ),
           ],
