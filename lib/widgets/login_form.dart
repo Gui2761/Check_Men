@@ -13,7 +13,7 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
-  final _emailController = TextEditingController();
+  final _identifierController = TextEditingController(); // Alterado para aceitar email ou username
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
 
@@ -28,7 +28,7 @@ class _LoginFormState extends State<LoginForm> {
 
   void _submit() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    final response = await auth.login(_emailController.text, _passwordController.text);
+    final response = await auth.login(_identifierController.text, _passwordController.text);
     if (response.statusCode >= 200 && response.statusCode < 300) {
       _showSnackbar('Login realizado com sucesso!');
       Navigator.pushReplacement(
@@ -43,7 +43,7 @@ class _LoginFormState extends State<LoginForm> {
   
   @override
   void dispose() {
-    _emailController.dispose();
+    _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -75,10 +75,10 @@ class _LoginFormState extends State<LoginForm> {
             child: Column(
               children: [
                 TextFormField(
-                  controller: _emailController,
+                  controller: _identifierController,
                   decoration: const InputDecoration(
                     prefixIcon: Icon(Icons.person_outline, color: Colors.grey),
-                    hintText: 'Seu email',
+                    hintText: 'Seu e-mail ou nome de usuário', // Novo: texto do hint
                     hintStyle: TextStyle(color: Colors.grey),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),

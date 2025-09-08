@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 class RegistrationForm extends StatefulWidget {
   const RegistrationForm({super.key});
@@ -12,6 +11,7 @@ class RegistrationForm extends StatefulWidget {
 }
 
 class _RegistrationFormState extends State<RegistrationForm> {
+  final _usernameController = TextEditingController(); // Novo: Controlador para o nome de usuário
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -31,7 +31,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
   void _submit() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
 
-    // Validação do formato do e-mail (NOVA VERIFICAÇÃO)
+    // Validação do formato do e-mail
     if (!RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(_emailController.text)) {
       _showSnackbar('Por favor, insira um e-mail válido.', isError: true);
       return;
@@ -42,8 +42,8 @@ class _RegistrationFormState extends State<RegistrationForm> {
       return;
     }
     
-    // O resto do código permanece o mesmo
     final response = await auth.register(
+      _usernameController.text, // Novo: Passando o nome de usuário
       _emailController.text,
       _passwordController.text,
       _recoveryPhraseController.text,
@@ -59,6 +59,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
 
   @override
   void dispose() {
+    _usernameController.dispose(); // Novo: Dispose do controlador de nome de usuário
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -93,10 +94,24 @@ class _RegistrationFormState extends State<RegistrationForm> {
               ),
               child: Column(
                 children: [
+                  TextFormField( // Novo: Campo para o nome de usuário
+                    controller: _usernameController,
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.person_outline, color: Colors.grey),
+                      hintText: 'Seu nome de usuário',
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Divider(height: 1, color: Color(0xFFE0E0E0)),
+                  ),
                   TextFormField(
                     controller: _emailController,
                     decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.person_outline, color: Colors.grey),
+                      prefixIcon: Icon(Icons.email_outlined, color: Colors.grey),
                       hintText: 'Seu email',
                       hintStyle: TextStyle(color: Colors.grey),
                       border: InputBorder.none,

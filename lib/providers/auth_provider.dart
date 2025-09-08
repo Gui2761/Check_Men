@@ -79,11 +79,11 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
   
-  Future<http.Response> login(String email, String password) async {
+  Future<http.Response> login(String identifier, String password) async { // Parâmetro alterado para 'identifier'
     _isLoading = true;
     notifyListeners();
     try {
-      final response = await _authService.login(email, password);
+      final response = await _authService.login(identifier, password);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         await saveLoginState(true);
       }
@@ -94,11 +94,11 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<http.Response> register(String email, String password, String recoveryPhrase) async {
+  Future<http.Response> register(String username, String email, String password, String recoveryPhrase) async { // Parâmetro 'username' adicionado
     _isLoading = true;
     notifyListeners();
     try {
-      final response = await _authService.register(email, password, recoveryPhrase);
+      final response = await _authService.register(username, email, password, recoveryPhrase);
       return response;
     } finally {
       _isLoading = false;
