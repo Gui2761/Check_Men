@@ -15,7 +15,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _recoveryPhraseController = TextEditingController();
+  final _securityWordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
 
@@ -32,7 +32,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
   void _submit() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
 
-    if (_usernameController.text.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty || _confirmPasswordController.text.isEmpty || _recoveryPhraseController.text.isEmpty) {
+    if (_usernameController.text.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty || _confirmPasswordController.text.isEmpty || _securityWordController.text.isEmpty) {
       _showSnackbar('Por favor, preencha todos os campos.', isError: true);
       return;
     }
@@ -51,7 +51,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
       _usernameController.text,
       _emailController.text,
       _passwordController.text,
-      _recoveryPhraseController.text,
+      _securityWordController.text,
     );
     if (!mounted) return;
     
@@ -60,7 +60,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
       auth.backToInitialScreen(context);
     } else {
       final data = json.decode(response.body);
-      _showSnackbar('Erro: ${data['message']}', isError: true);
+      _showSnackbar('Erro: ${data['detail']}', isError: true);
     }
   }
 
@@ -70,7 +70,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _recoveryPhraseController.dispose();
+    _securityWordController.dispose();
     super.dispose();
   }
 
@@ -105,7 +105,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                     controller: _usernameController,
                     decoration: const InputDecoration(
                       prefixIcon: Icon(Icons.person_outline, color: Colors.grey),
-                      hintText: 'Seu nome de usuário',
+                      hintText: 'Seu nome completo',
                       hintStyle: TextStyle(color: Colors.grey),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
@@ -174,10 +174,10 @@ class _RegistrationFormState extends State<RegistrationForm> {
                     child: Divider(height: 1, color: Color(0xFFE0E0E0)),
                   ),
                   TextFormField(
-                    controller: _recoveryPhraseController,
+                    controller: _securityWordController,
                     decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.email_outlined, color: Colors.grey),
-                      hintText: 'Digite sua palavra recuperação',
+                      prefixIcon: Icon(Icons.security_outlined, color: Colors.grey),
+                      hintText: 'Digite sua palavra de segurança',
                       hintStyle: TextStyle(color: Colors.grey),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),

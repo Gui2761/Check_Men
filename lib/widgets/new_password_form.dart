@@ -27,7 +27,8 @@ class _NewPasswordFormState extends State<NewPasswordForm> {
   }
 
   void _submit() async {
-    if (_passwordController.text.isEmpty || _confirmPasswordController.text.isEmpty) {
+    if (_passwordController.text.isEmpty ||
+        _confirmPasswordController.text.isEmpty) {
       _showSnackbar('Por favor, preencha todos os campos.', isError: true);
       return;
     }
@@ -44,7 +45,7 @@ class _NewPasswordFormState extends State<NewPasswordForm> {
       auth.backToInitialScreen(context);
     } else {
       final data = json.decode(response.body);
-      _showSnackbar('Erro: ${data['message']}', isError: true);
+      _showSnackbar('Erro: ${data['detail']}', isError: true);
     }
   }
 
@@ -65,7 +66,8 @@ class _NewPasswordFormState extends State<NewPasswordForm> {
         children: [
           const Text(
             'Redefinir sua senha',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+            style: TextStyle(
+                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -85,17 +87,22 @@ class _NewPasswordFormState extends State<NewPasswordForm> {
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey),
+                    prefixIcon:
+                        const Icon(Icons.lock_outline, color: Colors.grey),
                     hintText: 'Sua nova senha',
                     hintStyle: const TextStyle(color: Colors.grey),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 10),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                         color: Colors.grey,
                       ),
-                      onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                      onPressed: () => setState(
+                          () => _isPasswordVisible = !_isPasswordVisible),
                     ),
                   ),
                 ),
@@ -107,17 +114,23 @@ class _NewPasswordFormState extends State<NewPasswordForm> {
                   controller: _confirmPasswordController,
                   obscureText: !_isConfirmPasswordVisible,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey),
+                    prefixIcon:
+                        const Icon(Icons.lock_outline, color: Colors.grey),
                     hintText: 'Confirme a nova senha',
                     hintStyle: const TextStyle(color: Colors.grey),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 10),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        _isConfirmPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                         color: Colors.grey,
                       ),
-                      onPressed: () => setState(() => _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
+                      onPressed: () => setState(() =>
+                          _isConfirmPasswordVisible =
+                              !_isConfirmPasswordVisible),
                     ),
                   ),
                 ),
@@ -132,13 +145,15 @@ class _NewPasswordFormState extends State<NewPasswordForm> {
               onPressed: auth.isLoading ? null : _submit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF3B489A),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
               child: auth.isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
                   : const Text(
                       'Redefinir',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
                     ),
             ),
           ),
@@ -148,7 +163,8 @@ class _NewPasswordFormState extends State<NewPasswordForm> {
               onPressed: () => auth.backToInitialScreen(context),
               child: const Text(
                 'Voltar',
-                style: TextStyle(color: Color(0xFF3B489A), fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: Color(0xFF3B489A), fontWeight: FontWeight.bold),
               ),
             ),
           ),

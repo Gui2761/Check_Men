@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'screens/home_screen.dart';
 import 'providers/auth_provider.dart';
-import 'screens/saude_homem_screen.dart'; 
+// A linha abaixo foi removida
+// import 'screens/saude_homem_screen.dart'; 
 
 void main() {
   runApp(const MyApp());

@@ -12,8 +12,13 @@ class AuthProvider extends ChangeNotifier {
   bool _isForgotPasswordBoxVisible = false;
   bool _isNewPasswordBoxVisible = false;
   bool _isLoading = false;
-  String? _accessToken;
   
+  String? _accessToken;
+  String? _refreshToken; // Novo
+  
+  String? _emailForPasswordReset;
+  String? _securityWordForPasswordReset;
+
   bool get isLoginBoxVisible => _isLoginBoxVisible;
   bool get isRegistrationBoxVisible => _isRegistrationBoxVisible;
   bool get isForgotPasswordBoxVisible => _isForgotPasswordBoxVisible;
@@ -21,6 +26,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get accessToken => _accessToken;
 
+  // ... (funções de animação permanecem as mesmas)
   void animateLoginBox() {
     _isLoginBoxVisible = true;
     _isRegistrationBoxVisible = false;
@@ -73,21 +79,25 @@ class AuthProvider extends ChangeNotifier {
     return prefs.getBool('isLoggedIn') ?? false;
   }
 
-  Future<void> saveAccessToken(String token) async {
+  Future<void> _saveTokens(String accessToken, String refreshToken) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('accessToken', token);
-    _accessToken = token;
+    await prefs.setString('accessToken', accessToken);
+    await prefs.setString('refreshToken', refreshToken);
+    _accessToken = accessToken;
+    _refreshToken = refreshToken;
   }
-  
-  Future<void> loadAccessToken() async {
+
+  Future<void> _loadTokens() async {
     final prefs = await SharedPreferences.getInstance();
     _accessToken = prefs.getString('accessToken');
+    _refreshToken = prefs.getString('refreshToken');
   }
   
   void logout() async {
     await saveLoginState(false);
-    await _authService.clearAccessToken();
+    await _authService.clearTokens();
     _accessToken = null;
+    _refreshToken = null;
     _isLoginBoxVisible = false;
     _isRegistrationBoxVisible = false;
     _isForgotPasswordBoxVisible = false;
@@ -95,15 +105,15 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
   
-  Future<http.Response> login(String identifier, String password) async {
+  Future<http.Response> login(String email, String password) async {
     _isLoading = true;
     notifyListeners();
     try {
-      final response = await _authService.login(identifier, password);
+      final response = await _authService.login(email, password);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = json.decode(response.body);
-        if (data.containsKey('access_token')) {
-          await saveAccessToken(data['access_token']);
+        if (data.containsKey('access_token') && data.containsKey('refresh_token')) {
+          await _saveTokens(data['access_token'], data['refresh_token']);
         }
         await saveLoginState(true);
       }
@@ -114,15 +124,15 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<http.Response> register(String username, String email, String password, String recoveryPhrase) async {
+  Future<http.Response> register(String name, String email, String password, String securityWord) async {
     _isLoading = true;
     notifyListeners();
     try {
-      final response = await _authService.register(username, email, password, recoveryPhrase);
+      final response = await _authService.register(name, email, password, securityWord);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = json.decode(response.body);
-        if (data.containsKey('access_token')) {
-          await saveAccessToken(data['access_token']);
+        if (data.containsKey('access_token') && data.containsKey('refresh_token')) {
+          await _saveTokens(data['access_token'], data['refresh_token']);
         }
       }
       return response;
@@ -132,11 +142,41 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<http.Response> forgotPassword(String email, String recoveryPhrase) async {
+  // Nova função para lidar com a atualização do token
+  Future<bool> attemptRefreshToken() async {
+    await _loadTokens();
+    if (_refreshToken == null) {
+      return false;
+    }
+
+    try {
+      final response = await _authService.refreshToken(_refreshToken!);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = json.decode(response.body);
+        if (data.containsKey('access_token')) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('accessToken', data['access_token']);
+          _accessToken = data['access_token'];
+          notifyListeners();
+          return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  // ... (outras funções permanecem iguais)
+  Future<http.Response> verifySecurityWord(String email, String securityWord) async {
     _isLoading = true;
     notifyListeners();
     try {
-      final response = await _authService.forgotPassword(email, recoveryPhrase);
+      final response = await _authService.verifySecurityWord(email, securityWord);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        _emailForPasswordReset = email;
+        _securityWordForPasswordReset = securityWord;
+      }
       return response;
     } finally {
       _isLoading = false;
@@ -148,7 +188,10 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      final response = await _authService.resetPassword(newPassword);
+      if (_emailForPasswordReset == null || _securityWordForPasswordReset == null) {
+        throw Exception("Dados para redefinição de senha não encontrados.");
+      }
+      final response = await _authService.resetPassword(_emailForPasswordReset!, _securityWordForPasswordReset!, newPassword);
       return response;
     } finally {
       _isLoading = false;

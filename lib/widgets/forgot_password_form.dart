@@ -12,7 +12,7 @@ class ForgotPasswordForm extends StatefulWidget {
 
 class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
   final _emailController = TextEditingController();
-  final _recoveryPhraseController = TextEditingController();
+  final _securityWordController = TextEditingController();
 
   void _showSnackbar(String message, {bool isError = false}) {
     if (!mounted) return;
@@ -37,13 +37,13 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
       return;
     }
 
-    if (_recoveryPhraseController.text.isEmpty) {
-      _showSnackbar('Por favor, digite sua palavra de recuperação.', isError: true);
+    if (_securityWordController.text.isEmpty) {
+      _showSnackbar('Por favor, digite sua palavra de segurança.', isError: true);
       return;
     }
 
     try {
-      final response = await auth.forgotPassword(_emailController.text, _recoveryPhraseController.text);
+      final response = await auth.verifySecurityWord(_emailController.text, _securityWordController.text);
       
       if (!mounted) return;
 
@@ -52,7 +52,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
         auth.animateNewPasswordBox();
       } else {
         final data = json.decode(response.body);
-        _showSnackbar('Erro: ${data['message']}', isError: true);
+        _showSnackbar('Erro: ${data['detail']}', isError: true);
       }
     } catch (e) {
       _showSnackbar('Erro de conexão: ${e.toString()}', isError: true);
@@ -62,7 +62,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
   @override
   void dispose() {
     _emailController.dispose();
-    _recoveryPhraseController.dispose();
+    _securityWordController.dispose();
     super.dispose();
   }
 
@@ -80,7 +80,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Digite seu e-mail e a palavra de recuperação para trocar de senha!',
+            'Digite seu e-mail e a palavra de segurança para trocar de senha!',
             style: TextStyle(fontSize: 16, color: Color(0xFF888888)),
           ),
           const SizedBox(height: 32),
@@ -95,7 +95,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.person_outline, color: Colors.grey),
+                    prefixIcon: Icon(Icons.email_outlined, color: Colors.grey),
                     hintText: 'Seu email',
                     hintStyle: TextStyle(color: Colors.grey),
                     border: InputBorder.none,
@@ -107,10 +107,10 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
                   child: Divider(height: 1, color: Color(0xFFE0E0E0)),
                 ),
                 TextFormField(
-                  controller: _recoveryPhraseController,
+                  controller: _securityWordController,
                   decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.email_outlined, color: Colors.grey),
-                    hintText: 'Sua palavra de recuperação',
+                    prefixIcon: Icon(Icons.security_outlined, color: Colors.grey),
+                    hintText: 'Sua palavra de segurança',
                     hintStyle: TextStyle(color: Colors.grey),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
@@ -132,7 +132,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
               child: auth.isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
                   : const Text(
-                      'Recuperar',
+                      'Verificar',
                       style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
             ),

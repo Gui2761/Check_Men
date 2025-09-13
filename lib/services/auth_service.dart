@@ -1,76 +1,82 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/api_config.dart';
 
 class AuthService {
-  final String _baseUrl = 'http://localhost:8000/auth'; 
-  String? _accessToken;
-
-  Future<void> _loadAccessToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    _accessToken = prefs.getString('accessToken');
-  }
-
-  Future<void> clearAccessToken() async {
+  Future<void> clearTokens() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('accessToken');
-    _accessToken = null;
+    await prefs.remove('refreshToken');
   }
 
   Future<http.Response> login(String identifier, String password) async {
-    final bool isEmail = identifier.contains('@');
-
     final response = await http.post(
-      Uri.parse('$_baseUrl/login'),
+      Uri.parse(ApiConfig.baseUrl + ApiConfig.login),
       headers: <String, String>{
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
-        isEmail ? 'email' : 'username': identifier,
+        'identifier': identifier,
         'password': password,
       }),
     );
     return response;
   }
 
-  Future<http.Response> register(String username, String email, String password, String recoveryPhrase) async {
+  Future<http.Response> register(String name, String email, String password, String securityWord) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/register'),
+      Uri.parse(ApiConfig.baseUrl + ApiConfig.register),
       headers: <String, String>{
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
-        'username': username,
+        'name': name,
         'email': email,
         'password': password,
-        'recoveryPhrase': recoveryPhrase,
+        'security_word': securityWord,
       }),
     );
     return response;
   }
 
-  Future<http.Response> forgotPassword(String email, String recoveryPhrase) async {
+  Future<http.Response> refreshToken(String refreshToken) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/forgot-password'),
+      Uri.parse(ApiConfig.baseUrl + ApiConfig.refreshToken),
       headers: <String, String>{
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'refresh_token': refreshToken,
+      }),
+    );
+    return response;
+  }
+
+  Future<http.Response> verifySecurityWord(String email, String securityWord) async {
+    final response = await http.post(
+      Uri.parse(ApiConfig.baseUrl + ApiConfig.verifySecurityWord),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
         'email': email,
-        'recoveryPhrase': recoveryPhrase,
+        'security_word': securityWord,
       }),
     );
     return response;
   }
 
-  Future<http.Response> resetPassword(String newPassword) async {
+  Future<http.Response> resetPassword(String email, String securityWord, String newPassword) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/reset-password'),
+      Uri.parse(ApiConfig.baseUrl + ApiConfig.resetPassword),
       headers: <String, String>{
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
-        'newPassword': newPassword,
+        'email': email,
+        'security_word': securityWord,
+        'new_password': newPassword,
       }),
     );
     return response;
