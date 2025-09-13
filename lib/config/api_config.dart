@@ -8,3 +8,8 @@ class ApiConfig {
   static const String verifySecurityWord = '/auth/verify-security-word';
   static const String refreshToken = '/auth/refresh-token';
 }
+
+// para fucionar no celular
+// uvicorn app.main:app --reload --host 0.0.0.0
+// 'http://SEU_IP_AQUI:8000';
+// ipconfig
