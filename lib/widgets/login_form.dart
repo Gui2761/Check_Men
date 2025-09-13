@@ -27,14 +27,14 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   void _submit() async {
-    // Validação simples para campos vazios
+  
     if (_identifierController.text.isEmpty || _passwordController.text.isEmpty) {
       _showSnackbar('Por favor, preencha todos os campos.', isError: true);
       return;
     }
 
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    // A lógica no provider e no service já envia o identificador corretamente
+    
     final response = await auth.login(_identifierController.text, _passwordController.text);
     if (!mounted) return;
     

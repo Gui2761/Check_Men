@@ -14,7 +14,7 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading = false;
   
   String? _accessToken;
-  String? _refreshToken; // Novo
+  String? _refreshToken; 
   
   String? _emailForPasswordReset;
   String? _securityWordForPasswordReset;
@@ -26,7 +26,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get accessToken => _accessToken;
 
-  // ... (funções de animação permanecem as mesmas)
+
   void animateLoginBox() {
     _isLoginBoxVisible = true;
     _isRegistrationBoxVisible = false;
@@ -142,7 +142,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // Nova função para lidar com a atualização do token
+
   Future<bool> attemptRefreshToken() async {
     await _loadTokens();
     if (_refreshToken == null) {
@@ -167,7 +167,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
   
-  // ... (outras funções permanecem iguais)
+ 
   Future<http.Response> verifySecurityWord(String email, String securityWord) async {
     _isLoading = true;
     notifyListeners();

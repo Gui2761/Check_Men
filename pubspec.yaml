@@ -1,7 +1,7 @@
 name: checkmen_app
 description: Um novo projeto Flutter para o CheckMen.
 
-# O seguinte impede que este pacote seja publicado em pub.dev
+
 publish_to: 'none' 
 
 version: 1.0.0+1
@@ -28,11 +28,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Adicione a pasta de assets aqui
+  
   assets:
     - assets/
 
-# Configuração para o ícone do aplicativo
+
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
