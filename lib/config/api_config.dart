@@ -13,3 +13,4 @@ class ApiConfig {
 // uvicorn app.main:app --reload --host 0.0.0.0
 // 'http://SEU_IP_AQUI:8000';
 // ipconfig
+// venv\Scripts\activate
