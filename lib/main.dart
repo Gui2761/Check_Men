@@ -1,28 +1,23 @@
-// lib/main.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'providers/auth_provider.dart';
-import 'screens/home_screen.dart';
-import 'screens/Saude_Homem_Screen.dart'; // Adicione esta importação
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'screens/home_screen.dart';
+import 'providers/auth_provider.dart';
+import 'screens/saude_homem_screen.dart'; 
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Adicione esta linha
-  final authProvider = AuthProvider();
-  final isLoggedIn = await authProvider.loadLoginState();
-  runApp(MyApp(isLoggedIn: isLoggedIn));
+void main() {
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final bool isLoggedIn;
-  const MyApp({super.key, required this.isLoggedIn});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => AuthProvider(),
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'CheckMen App',
         theme: ThemeData(
           primarySwatch: Colors.blue,
@@ -35,7 +30,7 @@ class MyApp extends StatelessWidget {
         supportedLocales: const [
           Locale('pt', 'BR'),
         ],
-        home: isLoggedIn ? const SaudeHomemScreen() : const HomeScreen(),
+        home: const HomeScreen(),
       ),
     );
   }

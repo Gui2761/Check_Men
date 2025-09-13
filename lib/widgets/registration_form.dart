@@ -11,7 +11,7 @@ class RegistrationForm extends StatefulWidget {
 }
 
 class _RegistrationFormState extends State<RegistrationForm> {
-  final _usernameController = TextEditingController(); // Novo: Controlador para o nome de usuário
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -20,6 +20,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
   bool _isConfirmPasswordVisible = false;
 
   void _showSnackbar(String message, {bool isError = false}) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -31,7 +32,11 @@ class _RegistrationFormState extends State<RegistrationForm> {
   void _submit() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
 
-    // Validação do formato do e-mail
+    if (_usernameController.text.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty || _confirmPasswordController.text.isEmpty || _recoveryPhraseController.text.isEmpty) {
+      _showSnackbar('Por favor, preencha todos os campos.', isError: true);
+      return;
+    }
+
     if (!RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(_emailController.text)) {
       _showSnackbar('Por favor, insira um e-mail válido.', isError: true);
       return;
@@ -43,11 +48,13 @@ class _RegistrationFormState extends State<RegistrationForm> {
     }
     
     final response = await auth.register(
-      _usernameController.text, // Novo: Passando o nome de usuário
+      _usernameController.text,
       _emailController.text,
       _passwordController.text,
       _recoveryPhraseController.text,
     );
+    if (!mounted) return;
+    
     if (response.statusCode >= 200 && response.statusCode < 300) {
       _showSnackbar('Usuário registrado com sucesso!');
       auth.backToInitialScreen(context);
@@ -59,7 +66,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
 
   @override
   void dispose() {
-    _usernameController.dispose(); // Novo: Dispose do controlador de nome de usuário
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -94,7 +101,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
               ),
               child: Column(
                 children: [
-                  TextFormField( // Novo: Campo para o nome de usuário
+                  TextFormField(
                     controller: _usernameController,
                     decoration: const InputDecoration(
                       prefixIcon: Icon(Icons.person_outline, color: Colors.grey),

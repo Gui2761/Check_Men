@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../screens/Saude_Homem_Screen.dart';
+import '../screens/saude_homem_screen.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -13,11 +12,12 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
-  final _identifierController = TextEditingController(); // Alterado para aceitar email ou username
+  final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
 
   void _showSnackbar(String message, {bool isError = false}) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -27,8 +27,15 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   void _submit() async {
+    if (_identifierController.text.isEmpty || _passwordController.text.isEmpty) {
+      _showSnackbar('Por favor, preencha todos os campos.', isError: true);
+      return;
+    }
+
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final response = await auth.login(_identifierController.text, _passwordController.text);
+    if (!mounted) return;
+    
     if (response.statusCode >= 200 && response.statusCode < 300) {
       _showSnackbar('Login realizado com sucesso!');
       Navigator.pushReplacement(
@@ -78,7 +85,7 @@ class _LoginFormState extends State<LoginForm> {
                   controller: _identifierController,
                   decoration: const InputDecoration(
                     prefixIcon: Icon(Icons.person_outline, color: Colors.grey),
-                    hintText: 'Seu e-mail ou nome de usuário', // Novo: texto do hint
+                    hintText: 'Seu e-mail ou nome de usuário',
                     hintStyle: TextStyle(color: Colors.grey),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),

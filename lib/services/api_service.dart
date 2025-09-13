@@ -1,9 +1,9 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../models/usuario_model.dart';
+import 'package:checkmen_app/models/usuario_model.dart';
 
 class ApiService {
-  final String _baseUrl = 'https://jsonplaceholder.typicode.com';
+  final String _baseUrl = 'http://localhost:8000'; 
 
   Future<List<Usuario>> getUsuarios() async {
     final uri = Uri.parse('$_baseUrl/users');
@@ -25,7 +25,11 @@ class ApiService {
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode(dadosUsuario);
     try {
-      final response = await http.post(uri, headers: headers, body: body);
+      final response = await http.post(
+        uri,
+        headers: headers,
+        body: body,
+      );
       if (response.statusCode == 201) {
         return response;
       } else {

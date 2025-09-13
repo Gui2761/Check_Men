@@ -1,11 +1,23 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  final String _baseUrl = 'SEU_URL_DA_API'; // Substitua pelo seu URL
+  final String _baseUrl = 'http://localhost:8000/auth'; 
+  String? _accessToken;
+
+  Future<void> _loadAccessToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    _accessToken = prefs.getString('accessToken');
+  }
+
+  Future<void> clearAccessToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('accessToken');
+    _accessToken = null;
+  }
 
   Future<http.Response> login(String identifier, String password) async {
-    // Verifica se o identificador é um email (contém '@')
     final bool isEmail = identifier.contains('@');
 
     final response = await http.post(
@@ -14,7 +26,6 @@ class AuthService {
         'Content-Type': 'application/json',
       },
       body: jsonEncode(<String, String>{
-        // Envia o campo correto com base na verificação
         isEmail ? 'email' : 'username': identifier,
         'password': password,
       }),
@@ -29,7 +40,7 @@ class AuthService {
         'Content-Type': 'application/json',
       },
       body: jsonEncode(<String, String>{
-        'username': username, // Adicionado
+        'username': username,
         'email': email,
         'password': password,
         'recoveryPhrase': recoveryPhrase,

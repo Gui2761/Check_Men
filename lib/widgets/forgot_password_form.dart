@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 class ForgotPasswordForm extends StatefulWidget {
   const ForgotPasswordForm({super.key});
@@ -16,6 +15,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
   final _recoveryPhraseController = TextEditingController();
 
   void _showSnackbar(String message, {bool isError = false}) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -45,6 +45,8 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
     try {
       final response = await auth.forgotPassword(_emailController.text, _recoveryPhraseController.text);
       
+      if (!mounted) return;
+
       if (response.statusCode >= 200 && response.statusCode < 300) {
         _showSnackbar('Verificação realizada! Redefina sua senha.');
         auth.animateNewPasswordBox();
