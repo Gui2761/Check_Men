@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../config/api_config.dart';
+import '../config/api_config.dart'; // Certifique-se de que este import está correto
 
 class AuthService {
   Future<void> clearTokens() async {
@@ -13,13 +13,8 @@ class AuthService {
   Future<http.Response> login(String identifier, String password) async {
     final response = await http.post(
       Uri.parse(ApiConfig.baseUrl + ApiConfig.login),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'identifier': identifier,
-        'password': password,
-      }),
+      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode(<String, String>{'identifier': identifier, 'password': password}),
     );
     return response;
   }
@@ -27,9 +22,7 @@ class AuthService {
   Future<http.Response> register(String name, String email, String password, String securityWord) async {
     final response = await http.post(
       Uri.parse(ApiConfig.baseUrl + ApiConfig.register),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
+      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(<String, String>{
         'name': name,
         'email': email,
@@ -40,15 +33,12 @@ class AuthService {
     return response;
   }
 
+  // Novo método para renovar o token
   Future<http.Response> refreshToken(String refreshToken) async {
     final response = await http.post(
       Uri.parse(ApiConfig.baseUrl + ApiConfig.refreshToken),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'refresh_token': refreshToken,
-      }),
+      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode(<String, String>{'refresh_token': refreshToken}),
     );
     return response;
   }
@@ -56,13 +46,8 @@ class AuthService {
   Future<http.Response> verifySecurityWord(String email, String securityWord) async {
     final response = await http.post(
       Uri.parse(ApiConfig.baseUrl + ApiConfig.verifySecurityWord),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'email': email,
-        'security_word': securityWord,
-      }),
+      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode(<String, String>{'email': email, 'security_word': securityWord}),
     );
     return response;
   }
@@ -70,9 +55,7 @@ class AuthService {
   Future<http.Response> resetPassword(String email, String securityWord, String newPassword) async {
     final response = await http.post(
       Uri.parse(ApiConfig.baseUrl + ApiConfig.resetPassword),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
+      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(<String, String>{
         'email': email,
         'security_word': securityWord,

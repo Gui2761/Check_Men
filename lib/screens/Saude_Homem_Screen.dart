@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../screens/home_screen.dart';
+import 'home_screen.dart'; // Assumindo que Home é a tela de Login/Boas-Vindas
+import 'noticias_screen.dart';
+import 'lembretes_screen.dart'; 
+
+// Importe a nova tela de IA
+import 'ia_chat_screen.dart'; // <--- NOVA IMPORTAÇÃO AQUI
 
 class SaudeHomemScreen extends StatefulWidget {
   const SaudeHomemScreen({super.key});
@@ -15,28 +20,26 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final userName = authProvider.userName ?? 'Usuário';
+
     return Scaffold(
       key: _scaffoldKey,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: Row(
-            children: [
-              Image.asset(
-                "assets/logo1.png",
-                height: 40,
-                fit: BoxFit.contain,
-              ),
-            ],
-          ),
+        automaticallyImplyLeading: false, // Não mostra o botão de voltar padrão
+        title: Image.asset(
+          "assets/logo1.png", // Certifique-se de que este asset existe
+          height: 45,
+          fit: BoxFit.contain,
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.menu, color: Colors.black),
             onPressed: () {
-              _scaffoldKey.currentState?.openEndDrawer();
+              _scaffoldKey.currentState?.openEndDrawer(); // Abre o Drawer da direita
             },
           ),
         ],
@@ -44,68 +47,86 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
       endDrawer: Drawer(
         child: Column(
           children: [
-            SizedBox(
-              height: 120,
-              child: DrawerHeader(
-                decoration: const BoxDecoration(
-                  color: Color(0xFF1976D2),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Image.asset(
-                      "assets/logo1.png",
-                      height: 40,
-                      fit: BoxFit.contain,
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  SizedBox(
+                    height: 120, // Altura ajustada para o cabeçalho
+                    child: DrawerHeader(
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF007BFF),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Olá, $userName',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
-                    const Text(
-                      'CheckMen',
-                      style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.monitor_heart_outlined),
+                    title: const Text('Saúde Masculina'),
+                    onTap: () {
+                      // Se já está na tela de Saúde Masculina, apenas fecha o drawer
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.article_outlined),
+                    title: const Text('Notícias'),
+                    onTap: () {
+                      Navigator.pop(context); // Fecha o drawer
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const NoticiasScreen()),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.notifications_outlined),
+                    title: const Text('Lembretes'),
+                    onTap: () {
+                      Navigator.pop(context); // Fecha o drawer
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LembretesScreen()),
+                      );
+                    },
+                  ),
+                  // --- AQUI VAI O ITEM DE MENU PARA A IA ---
+                  ListTile(
+                    leading: const Icon(Icons.smart_toy_outlined),
+                    title: const Text('IA Horus'), // Nome da sua IA
+                    onTap: () {
+                      Navigator.pop(context); // Fecha o drawer
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const IaChatScreen()), // NAVEGA PARA IA
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
+            const Divider(), // Linha divisória antes do botão de sair
             ListTile(
-              leading: const Icon(Icons.home_outlined),
-              title: const Text('Home'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.favorite_outline),
-              title: const Text('Saúde Masculina'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.article_outlined),
-              title: const Text('Notícias'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Configurações'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            // NOVO BOTÃO
-            ListTile(
-              leading: const Icon(Icons.exit_to_app),
+              leading: const Icon(Icons.exit_to_app, color: Colors.red),
               title: const Text('Sair'),
               onTap: () {
-                Provider.of<AuthProvider>(context, listen: false).logout();
+                authProvider.logout(); // Chama o método de logout
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                  (Route<dynamic> route) => false,
+                  MaterialPageRoute(builder: (context) => const HomeScreen()), // Vai para a tela de login
+                  (Route<dynamic> route) => false, // Remove todas as rotas anteriores
                 );
               },
             ),
+            const SizedBox(height: 20), // Espaçamento inferior
           ],
         ),
       ),
@@ -113,91 +134,207 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Bem-vindo ao CheckMen',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Sua plataforma completa para saúde masculina e consultas agendadas.',
-                style: TextStyle(fontSize: 16),
+              const SizedBox(height: 20),
+              Center(
+                child: Text(
+                  'Bem-vindo ao CheckMen, $userName',
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+                ),
               ),
               const SizedBox(height: 32),
-              const Text(
-                'Destaques',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              
+              // Card para Lembretes
+              AnimatedFeatureCard(
+                title: 'Lembretes',
+                subtitle: 'Acompanhe seus exames e consultas agendadas',
+                icon: Icons.notifications,
+                color: const Color(0xFF007BFF),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LembretesScreen()),
+                  );
+                },
               ),
-              const SizedBox(height: 16),
-              _buildFeatureCard(
+              const SizedBox(height: 24),
+              
+              // Card para Notícias
+              AnimatedFeatureCard(
+                title: 'Notícia',
+                subtitle: 'Últimas novidades em saúde masculina',
+                icon: Icons.article,
+                color: const Color(0xFFE8F0FE), // Cor clara
+                textColor: Colors.black, // Texto preto para card claro
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const NoticiasScreen()),
+                  );
+                },
+              ),
+              const SizedBox(height: 24),
+              
+              // Card para a própria tela de Saúde Masculina (se houver conteúdo interno)
+              AnimatedFeatureCard(
                 title: 'Saúde Masculina',
-                subtitle: 'Conheça mais sobre a sua saúde e tire suas dúvidas.',
-                icon: Icons.favorite_border,
-                color: Colors.blue[100]!,
-                iconColor: Colors.blue,
+                subtitle: 'Dicas, hobbies e hábitos saudáveis',
+                icon: Icons.monitor_heart,
+                color: const Color(0xFF007BFF),
+                onTap: () {
+                  // Se esta tela já exibe os conteúdos de saúde,
+                  // você pode não querer navegar para ela mesma.
+                  // Ou pode ter subseções que você navega aqui.
+                  // Por enquanto, farei um print ou apenas fecho o drawer se for o caso.
+                  print('Já estamos na tela de Saúde Masculina.');
+                },
               ),
-              const SizedBox(height: 16),
-              _buildFeatureCard(
-                title: 'Notícias',
-                subtitle: 'Fique por dentro das últimas notícias sobre saúde.',
-                icon: Icons.article_outlined,
-                color: Colors.green[100]!,
-                iconColor: Colors.green,
+              const SizedBox(height: 24),
+              
+              // --- AQUI VAI O CARD PARA A IA ---
+              AnimatedFeatureCard(
+                title: 'IA Horus', // Nome da sua IA
+                subtitle: 'Seu assistente inteligente de saúde',
+                icon: Icons.smart_toy,
+                color: const Color(0xFFE8F0FE), // Cor clara
+                textColor: Colors.black, // Texto preto para card claro
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const IaChatScreen()), // NAVEGA PARA IA
+                  );
+                },
               ),
-              const SizedBox(height: 16),
-              _buildFeatureCard(
-                title: 'Consulta Inteligente de Saúde',
-                subtitle: 'Obtenha um diagnóstico rápido e preciso.',
-                icon: Icons.search,
-                color: Colors.purple[100]!,
-                iconColor: Colors.purple,
-              ),
-              const SizedBox(height: 32),
             ],
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildFeatureCard({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required Color iconColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: iconColor,
-            child: Icon(icon, color: Colors.white),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ],
+// Widget auxiliar para os cards animados (deve estar no mesmo arquivo ou em um separado importado)
+class AnimatedFeatureCard extends StatefulWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final Color textColor;
+  final VoidCallback onTap;
+
+  const AnimatedFeatureCard({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    this.textColor = Colors.white, // Cor padrão do texto
+    required this.onTap,
+  });
+
+  @override
+  State<AnimatedFeatureCard> createState() => _AnimatedFeatureCardState();
+}
+
+class _AnimatedFeatureCardState extends State<AnimatedFeatureCard> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _shadowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+
+    _shadowAnimation = Tween<double>(begin: 5.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    _controller.forward();
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    _controller.reverse();
+    widget.onTap(); // Chama o onTap do widget pai
+  }
+
+  void _onTapCancel() {
+    _controller.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              decoration: BoxDecoration(
+                color: widget.color,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2 + (0.3 * (1 - _controller.value))),
+                    spreadRadius: 2,
+                    blurRadius: _shadowAnimation.value,
+                    offset: Offset(0, _shadowAnimation.value),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(widget.icon, color: widget.textColor, size: 32),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.title,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: widget.textColor,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.subtitle,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: widget.textColor.withAlpha(230), // Levemente transparente
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

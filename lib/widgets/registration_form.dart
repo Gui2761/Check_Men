@@ -37,6 +37,12 @@ class _RegistrationFormState extends State<RegistrationForm> {
       return;
     }
 
+    // A validação que você pediu, para o nome de usuário
+    if (_usernameController.text.length < 2) {
+      _showSnackbar('O nome deve ter pelo menos 2 caracteres.', isError: true);
+      return;
+    }
+
     if (!RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(_emailController.text)) {
       _showSnackbar('Por favor, insira um e-mail válido.', isError: true);
       return;
@@ -47,6 +53,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
       return;
     }
     
+    // Agora o código para registrar
     final response = await auth.register(
       _usernameController.text,
       _emailController.text,
@@ -60,7 +67,20 @@ class _RegistrationFormState extends State<RegistrationForm> {
       auth.backToInitialScreen(context);
     } else {
       final data = json.decode(response.body);
-      _showSnackbar('Erro: ${data['detail']}', isError: true);
+      // Tentando extrair a mensagem de erro de forma mais robusta
+      String errorMessage = 'Erro ao registrar. Tente novamente.';
+      if (data != null && data['detail'] is String) {
+        errorMessage = 'Erro: ${data['detail']}';
+      } else if (data != null && data['detail'] is List && data['detail'].isNotEmpty) {
+        // Se 'detail' é uma lista (como no seu erro 422 anterior)
+        final firstDetail = data['detail'][0];
+        if (firstDetail is Map && firstDetail.containsKey('msg')) {
+          errorMessage = 'Erro: ${firstDetail['msg']}';
+        } else {
+          errorMessage = 'Erro: ${data['detail'].toString()}';
+        }
+      }
+      _showSnackbar(errorMessage, isError: true);
     }
   }
 
