@@ -109,8 +109,8 @@ class _LembretesScreenState extends State<LembretesScreen> {
                       padding: const EdgeInsets.all(32.0),
                       child: Text(
                         termoDePesquisa.isEmpty 
-                          ? 'Nenhum exame agendado para ${mesAtual}.' 
-                          : 'Nenhum resultado encontrado para "${termoDePesquisa}".', 
+                          ? 'Nenhum exame agendado para $mesAtual.' 
+                          : 'Nenhum resultado encontrado para "$termoDePesquisa".', 
                         style: const TextStyle(fontSize: 16, color: Colors.grey),
                         textAlign: TextAlign.center,
                       ),
@@ -232,7 +232,7 @@ class _LembretesScreenState extends State<LembretesScreen> {
                   return;
                 }
                 if (dia == null || !_isDayValidForMonth(dia, mesAtual)) {
-                  _showAlertDialog('Erro', 'O dia é inválido para ${mesAtual}. Por favor, insira um dia entre 1 e ${diasPorMes[mesAtual]}.');
+                  _showAlertDialog('Erro', 'O dia é inválido para $mesAtual. Por favor, insira um dia entre 1 e ${diasPorMes[mesAtual]}.');
                   return;
                 }
                 // Chama o provider para adicionar o exame
@@ -296,7 +296,7 @@ class _LembretesScreenState extends State<LembretesScreen> {
                       return;
                     }
                     if (novoDia == null || !_isDayValidForMonth(novoDia, mesAtual)) {
-                      _showAlertDialog('Erro', 'O dia é inválido para ${mesAtual}. Por favor, insira um dia entre 1 e ${diasPorMes[mesAtual]}.');
+                      _showAlertDialog('Erro', 'O dia é inválido para $mesAtual. Por favor, insira um dia entre 1 e ${diasPorMes[mesAtual]}.');
                       return;
                     }
 

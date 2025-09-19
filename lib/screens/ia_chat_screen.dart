@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart'; // Para renderizar o Markdown
 import 'package:google_generative_ai/google_generative_ai.dart'; // SDK do Gemini
-import 'package:flutter/services.dart' show rootBundle; // Para carregar a chave da API
+import 'package:flutter/services.dart'
+    show rootBundle; // Para carregar a chave da API
 
 // É uma boa prática não embutir a chave da API diretamente no código.
 // Por enquanto, vamos carregar de um arquivo de assets ou de variáveis de ambiente.
@@ -19,7 +20,7 @@ class _IaChatScreenState extends State<IaChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final List<ChatMessage> _messages = [];
   GenerativeModel? _model; // O modelo Gemini
-  ChatSession? _chat;     // A sessão de chat para manter o contexto
+  ChatSession? _chat; // A sessão de chat para manter o contexto
 
   bool _isLoading = false;
 
@@ -35,19 +36,29 @@ class _IaChatScreenState extends State<IaChatScreen> {
       // CRIE UM ARQUIVO: assets/generative_ai_key.txt
       // COLOQUE SUA CHAVE DA API LÁ.
       // NÃO FAÇA COMMIT DESTE ARQUIVO PARA REPOSITÓRIOS PÚBLICOS!
-      final String apiKey = await rootBundle.loadString('assets/generative_ai_key.txt');
-      
+      final String apiKey =
+          await rootBundle.loadString('assets/generative_ai_key.txt');
+
       // O modelo padrão é "gemini-pro" para texto.
       // Se você quiser lidar com imagens, use "gemini-pro-vision".
-      _model = GenerativeModel(model: 'gemini-pro', apiKey: apiKey);
-      _chat = _model!.startChat(); // Inicia uma nova sessão de chat
-      
-      // Mensagem de boas-vindas inicial da IA
-      _addMessage(ChatMessage(text: "Olá! Como posso auxiliar na sua saúde masculina hoje?", isUser: false));
+      _model = GenerativeModel(
+  model: 'gemini-1.5-flash-latest',
+  apiKey: apiKey,
+  // **NOVA ADIÇÃO:** Instrução do Sistema para a IA
+  systemInstruction: Content.text(
+      "Você é um assistente de saúde masculina. Responda sempre em português brasileiro de forma útil, amigável e informativa sobre temas de saúde masculina. Mantenha um tom profissional mas acessível. Não se desvie do tópico de saúde masculina, a menos que seja solicitado para uma saudação ou breve interação."
+  ),
+);
+_chat = _model!.startChat();
 
+// Mensagem de boas-vindas inicial da IA (manter em português)
+_addMessage(ChatMessage(text: "Olá! Como posso auxiliar na sua saúde masculina hoje?", isUser: false));
     } catch (e) {
       print('Erro ao inicializar o modelo Gemini: $e');
-      _addMessage(ChatMessage(text: "Desculpe, não consegui conectar com a IA. Por favor, tente novamente mais tarde.", isUser: false));
+      _addMessage(ChatMessage(
+          text:
+              "Desculpe, não consegui conectar com a IA. Por favor, tente novamente mais tarde.",
+          isUser: false));
     }
   }
 
@@ -70,11 +81,14 @@ class _IaChatScreenState extends State<IaChatScreen> {
 
     try {
       final response = await _chat!.sendMessage(Content.text(userMessageText));
-      final aiResponseText = response.text ?? "Desculpe, não consegui gerar uma resposta.";
+      final aiResponseText =
+          response.text ?? "Desculpe, não consegui gerar uma resposta.";
       _addMessage(ChatMessage(text: aiResponseText, isUser: false));
     } catch (e) {
       print('Erro ao enviar mensagem para a IA: $e');
-      _addMessage(ChatMessage(text: "Desculpe, houve um erro ao processar sua solicitação.", isUser: false));
+      _addMessage(ChatMessage(
+          text: "Desculpe, houve um erro ao processar sua solicitação.",
+          isUser: false));
     } finally {
       setState(() {
         _isLoading = false;
@@ -93,7 +107,8 @@ class _IaChatScreenState extends State<IaChatScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('CheckMen IA', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text('CheckMen IA',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: Column(
@@ -103,7 +118,9 @@ class _IaChatScreenState extends State<IaChatScreen> {
               reverse: true, // Mostra as mensagens mais recentes no final
               itemCount: _messages.length,
               itemBuilder: (context, index) {
-                final message = _messages[_messages.length - 1 - index]; // Inverte a ordem para exibir do mais antigo para o mais novo
+                final message = _messages[_messages.length -
+                    1 -
+                    index]; // Inverte a ordem para exibir do mais antigo para o mais novo
                 return _buildMessageBubble(message);
               },
             ),
@@ -130,9 +147,11 @@ class _IaChatScreenState extends State<IaChatScreen> {
                       ),
                       filled: true,
                       fillColor: Colors.grey[200],
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20.0, vertical: 10.0),
                     ),
-                    onSubmitted: (_) => _sendMessage(), // Envia ao pressionar Enter
+                    onSubmitted: (_) =>
+                        _sendMessage(), // Envia ao pressionar Enter
                   ),
                 ),
                 const SizedBox(width: 8.0),
@@ -156,9 +175,12 @@ class _IaChatScreenState extends State<IaChatScreen> {
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
         padding: const EdgeInsets.all(12.0),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
-          color: message.isUser ? const Color(0xFFE0E0E0) : const Color(0xFF1A75B4),
+          color: message.isUser
+              ? const Color(0xFFE0E0E0)
+              : const Color(0xFF1A75B4),
           borderRadius: BorderRadius.circular(18.0),
           boxShadow: [
             BoxShadow(
@@ -168,16 +190,21 @@ class _IaChatScreenState extends State<IaChatScreen> {
             ),
           ],
         ),
-        child: MarkdownBody( // Usa MarkdownBody para renderizar a resposta da IA
+        child: MarkdownBody(
+          // Usa MarkdownBody para renderizar a resposta da IA
           data: message.text,
           styleSheet: MarkdownStyleSheet(
             p: TextStyle(
               color: message.isUser ? Colors.black87 : Colors.white,
               fontSize: 16,
             ),
-            h1: TextStyle(color: message.isUser ? Colors.black87 : Colors.white),
-            h2: TextStyle(color: message.isUser ? Colors.black87 : Colors.white),
-            strong: TextStyle(color: message.isUser ? Colors.black87 : Colors.white, fontWeight: FontWeight.bold),
+            h1: TextStyle(
+                color: message.isUser ? Colors.black87 : Colors.white),
+            h2: TextStyle(
+                color: message.isUser ? Colors.black87 : Colors.white),
+            strong: TextStyle(
+                color: message.isUser ? Colors.black87 : Colors.white,
+                fontWeight: FontWeight.bold),
             // Adicione mais estilos conforme necessário
           ),
         ),
