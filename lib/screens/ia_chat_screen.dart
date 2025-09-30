@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart'; // Para renderizar o Markdown
-import 'package:google_generative_ai/google_generative_ai.dart'; // SDK do Gemini
-import 'package:flutter/services.dart'
-    show rootBundle; // Para carregar a chave da API
-
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 
 class IaChatScreen extends StatefulWidget {
   const IaChatScreen({super.key});
@@ -15,34 +15,39 @@ class IaChatScreen extends StatefulWidget {
 class _IaChatScreenState extends State<IaChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final List<ChatMessage> _messages = [];
-  GenerativeModel? _model; // O modelo Gemini
-  ChatSession? _chat; // A sessão de chat para manter o contexto
-
+  GenerativeModel? _model;
+  ChatSession? _chat;
   bool _isLoading = false;
+  bool _isInitialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    _initializeGenerativeModel();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      _initializeGenerativeModel();
+      _isInitialized = true;
+    }
   }
 
   Future<void> _initializeGenerativeModel() async {
     try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userName = authProvider.userName ?? 'Usuário';
       final String apiKey =
           await rootBundle.loadString('assets/generative_ai_key.txt');
 
       _model = GenerativeModel(
-  model: 'gemini-2.5-pro',
-  apiKey: apiKey,
-  
-  systemInstruction: Content.text(
-      "Você é um assistente de saúde masculina. Responda sempre em português brasileiro de forma útil, amigável e informativa sobre temas de saúde masculina. Mantenha um tom profissional mas acessível. Não se desvie do tópico de saúde masculina, a menos que seja solicitado para uma saudação ou breve interação."
-  ),
-);
-_chat = _model!.startChat();
+        model: 'gemini-2.5-pro',
+        apiKey: apiKey,
+        systemInstruction: Content.text(
+            "Você é um assistente de saúde masculina. Responda sempre em português brasileiro de forma útil, amigável e informativa sobre temas de saúde masculina. Mantenha um tom profissional mas acessível. Não se desvie do tópico de saúde masculina, a menos que seja solicitado para uma saudação ou breve interação."),
+      );
+      _chat = _model!.startChat();
 
-
-_addMessage(ChatMessage(text: 'Olá, $userName! Como posso auxiliar na sua saúde masculina hoje?', isUser: false));
+      _addMessage(ChatMessage(
+          text:
+              'Olá, $userName! Como posso auxiliar na sua saúde masculina hoje?',
+          isUser: false));
     } catch (e) {
       print('Erro ao inicializar o modelo Gemini: $e');
       _addMessage(ChatMessage(
@@ -53,9 +58,11 @@ _addMessage(ChatMessage(text: 'Olá, $userName! Como posso auxiliar na sua saúd
   }
 
   void _addMessage(ChatMessage message) {
-    setState(() {
-      _messages.add(message);
-    });
+    if (mounted) {
+      setState(() {
+        _messages.add(message);
+      });
+    }
   }
 
   Future<void> _sendMessage() async {
@@ -80,9 +87,11 @@ _addMessage(ChatMessage(text: 'Olá, $userName! Como posso auxiliar na sua saúd
           text: "Desculpe, houve um erro ao processar sua solicitação.",
           isUser: false));
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -105,12 +114,10 @@ _addMessage(ChatMessage(text: 'Olá, $userName! Como posso auxiliar na sua saúd
         children: [
           Expanded(
             child: ListView.builder(
-              reverse: true, // Mostra as mensagens mais recentes no final
+              reverse: true,
               itemCount: _messages.length,
               itemBuilder: (context, index) {
-                final message = _messages[_messages.length -
-                    1 -
-                    index]; // Inverte a ordem para exibir do mais antigo para o mais novo
+                final message = _messages[_messages.length - 1 - index];
                 return _buildMessageBubble(message);
               },
             ),
@@ -140,8 +147,7 @@ _addMessage(ChatMessage(text: 'Olá, $userName! Como posso auxiliar na sua saúd
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 20.0, vertical: 10.0),
                     ),
-                    onSubmitted: (_) =>
-                        _sendMessage(), // Envia ao pressionar Enter
+                    onSubmitted: (_) => _sendMessage(),
                   ),
                 ),
                 const SizedBox(width: 8.0),
@@ -181,21 +187,17 @@ _addMessage(ChatMessage(text: 'Olá, $userName! Como posso auxiliar na sua saúd
           ],
         ),
         child: MarkdownBody(
-          // Usa MarkdownBody para renderizar a resposta da IA
           data: message.text,
           styleSheet: MarkdownStyleSheet(
             p: TextStyle(
               color: message.isUser ? Colors.black87 : Colors.white,
               fontSize: 16,
             ),
-            h1: TextStyle(
-                color: message.isUser ? Colors.black87 : Colors.white),
-            h2: TextStyle(
-                color: message.isUser ? Colors.black87 : Colors.white),
+            h1: TextStyle(color: message.isUser ? Colors.black87 : Colors.white),
+            h2: TextStyle(color: message.isUser ? Colors.black87 : Colors.white),
             strong: TextStyle(
                 color: message.isUser ? Colors.black87 : Colors.white,
                 fontWeight: FontWeight.bold),
-            // Adicione mais estilos conforme necessário
           ),
         ),
       ),
