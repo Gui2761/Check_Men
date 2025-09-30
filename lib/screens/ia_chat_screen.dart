@@ -4,10 +4,6 @@ import 'package:google_generative_ai/google_generative_ai.dart'; // SDK do Gemin
 import 'package:flutter/services.dart'
     show rootBundle; // Para carregar a chave da API
 
-// É uma boa prática não embutir a chave da API diretamente no código.
-// Por enquanto, vamos carregar de um arquivo de assets ou de variáveis de ambiente.
-// Para fins de demonstração, vou sugerir carregar de um arquivo de assets.
-// Você precisará criar um arquivo `assets/generative_ai_key.txt` com sua chave.
 
 class IaChatScreen extends StatefulWidget {
   const IaChatScreen({super.key});
@@ -32,27 +28,21 @@ class _IaChatScreenState extends State<IaChatScreen> {
 
   Future<void> _initializeGenerativeModel() async {
     try {
-      // Carrega a chave da API de um arquivo de assets.
-      // CRIE UM ARQUIVO: assets/generative_ai_key.txt
-      // COLOQUE SUA CHAVE DA API LÁ.
-      // NÃO FAÇA COMMIT DESTE ARQUIVO PARA REPOSITÓRIOS PÚBLICOS!
       final String apiKey =
           await rootBundle.loadString('assets/generative_ai_key.txt');
 
-      // O modelo padrão é "gemini-pro" para texto.
-      // Se você quiser lidar com imagens, use "gemini-pro-vision".
       _model = GenerativeModel(
-  model: 'gemini-1.5-flash-latest',
+  model: 'gemini-2.5-pro',
   apiKey: apiKey,
-  // **NOVA ADIÇÃO:** Instrução do Sistema para a IA
+  
   systemInstruction: Content.text(
       "Você é um assistente de saúde masculina. Responda sempre em português brasileiro de forma útil, amigável e informativa sobre temas de saúde masculina. Mantenha um tom profissional mas acessível. Não se desvie do tópico de saúde masculina, a menos que seja solicitado para uma saudação ou breve interação."
   ),
 );
 _chat = _model!.startChat();
 
-// Mensagem de boas-vindas inicial da IA (manter em português)
-_addMessage(ChatMessage(text: "Olá! Como posso auxiliar na sua saúde masculina hoje?", isUser: false));
+
+_addMessage(ChatMessage(text: 'Olá, $userName! Como posso auxiliar na sua saúde masculina hoje?', isUser: false));
     } catch (e) {
       print('Erro ao inicializar o modelo Gemini: $e');
       _addMessage(ChatMessage(

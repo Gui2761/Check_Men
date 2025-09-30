@@ -54,12 +54,12 @@ class UserExamsProvider with ChangeNotifier {
     for (String month in meses) {
       final List<ExamDay> monthExams = [];
       // Iterar sobre os valores e filtrar pelo mês (se a chave do ExamDay for 'dia-mes')
-      _userExamsBox!.values.forEach((examDay) {
+      for (var examDay in _userExamsBox!.values) {
         final keyForDay = '${examDay.day}-$month';
         if (_userExamsBox!.containsKey(keyForDay)) { // Verifica se esta ExamDay pertence a esta month string
            monthExams.add(examDay);
         }
-      });
+      }
       monthExams.sort((a, b) => a.day.compareTo(b.day));
       _cachedExams[month] = monthExams;
     }

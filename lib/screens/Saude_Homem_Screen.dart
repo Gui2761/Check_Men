@@ -29,9 +29,9 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        automaticallyImplyLeading: false, // Não mostra o botão de voltar padrão
+        automaticallyImplyLeading: false, 
         title: Image.asset(
-          "assets/logo1.png", // Certifique-se de que este asset existe
+          "assets/logo1.png", 
           height: 45,
           fit: BoxFit.contain,
         ),
@@ -39,7 +39,7 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
           IconButton(
             icon: const Icon(Icons.menu, color: Colors.black),
             onPressed: () {
-              _scaffoldKey.currentState?.openEndDrawer(); // Abre o Drawer da direita
+              _scaffoldKey.currentState?.openEndDrawer(); 
             },
           ),
         ],
@@ -52,7 +52,7 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
                 padding: EdgeInsets.zero,
                 children: [
                   SizedBox(
-                    height: 120, // Altura ajustada para o cabeçalho
+                    height: 120, 
                     child: DrawerHeader(
                       decoration: const BoxDecoration(
                         color: Color(0xFF007BFF),
@@ -73,7 +73,7 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
                     leading: const Icon(Icons.monitor_heart_outlined),
                     title: const Text('Saúde Masculina'),
                     onTap: () {
-                      // Se já está na tela de Saúde Masculina, apenas fecha o drawer
+                      
                       Navigator.pop(context);
                     },
                   ),
@@ -81,7 +81,7 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
                     leading: const Icon(Icons.article_outlined),
                     title: const Text('Notícias'),
                     onTap: () {
-                      Navigator.pop(context); // Fecha o drawer
+                      Navigator.pop(context); 
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const NoticiasScreen()),
@@ -92,41 +92,41 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
                     leading: const Icon(Icons.notifications_outlined),
                     title: const Text('Lembretes'),
                     onTap: () {
-                      Navigator.pop(context); // Fecha o drawer
+                      Navigator.pop(context); 
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const LembretesScreen()),
                       );
                     },
                   ),
-                  // --- AQUI VAI O ITEM DE MENU PARA A IA ---
+          
                   ListTile(
                     leading: const Icon(Icons.smart_toy_outlined),
-                    title: const Text('IA Horus'), // Nome da sua IA
+                    title: const Text('IA Horus'), 
                     onTap: () {
-                      Navigator.pop(context); // Fecha o drawer
+                      Navigator.pop(context); 
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const IaChatScreen()), // NAVEGA PARA IA
+                        MaterialPageRoute(builder: (context) => const IaChatScreen()), 
                       );
                     },
                   ),
                 ],
               ),
             ),
-            const Divider(), // Linha divisória antes do botão de sair
+            const Divider(), 
             ListTile(
               leading: const Icon(Icons.exit_to_app, color: Colors.red),
               title: const Text('Sair'),
               onTap: () {
-                authProvider.logout(); // Chama o método de logout
+                authProvider.logout();
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const HomeScreen()), // Vai para a tela de login
-                  (Route<dynamic> route) => false, // Remove todas as rotas anteriores
+                  MaterialPageRoute(builder: (context) => const HomeScreen()), 
+                  (Route<dynamic> route) => false, 
                 );
               },
             ),
-            const SizedBox(height: 20), // Espaçamento inferior
+            const SizedBox(height: 20), 
           ],
         ),
       ),
@@ -145,7 +145,6 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
               ),
               const SizedBox(height: 32),
               
-              // Card para Lembretes
               AnimatedFeatureCard(
                 title: 'Lembretes',
                 subtitle: 'Acompanhe seus exames e consultas agendadas',
@@ -160,13 +159,13 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
               ),
               const SizedBox(height: 24),
               
-              // Card para Notícias
+          
               AnimatedFeatureCard(
                 title: 'Notícia',
                 subtitle: 'Últimas novidades em saúde masculina',
                 icon: Icons.article,
-                color: const Color(0xFFE8F0FE), // Cor clara
-                textColor: Colors.black, // Texto preto para card claro
+                color: const Color(0xFFE8F0FE), 
+                textColor: Colors.black, 
                 onTap: () {
                   Navigator.push(
                     context,
