@@ -24,6 +24,10 @@ dependencies:
   google_generative_ai: ^0.4.7 # Para o SDK do Gemini
   flutter_markdown: ^0.7.0
 
+  # 🟢 NOVO: Adicionar Firebase
+  firebase_core: ^2.27.1  # Core do Firebase
+  firebase_messaging: ^14.8.4 # Messaging/Push
+  
   # Dependências do Hive para salvar dados
   hive: ^2.2.3
   hive_flutter: ^1.1.0

@@ -1,9 +1,14 @@
+// gui2761/check_men/Check_Men-e15d1b7f40dd23def6eca51b303d67d10e1cbdd7/lib/providers/auth_provider.dart
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'user_exams_provider.dart'; // Importar o novo provedor
+import 'user_exams_provider.dart'; 
+import 'package:firebase_messaging/firebase_messaging.dart'; 
+// 🟢 NOVA IMPORTAÇÃO
+import '../services/notification_service.dart'; 
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -19,7 +24,7 @@ class AuthProvider extends ChangeNotifier {
   String? _accessToken;
   String? _refreshToken;
   String? _userName;
-  String? _userId; // Adicionar o ID do usuário
+  String? _userId; 
 
   // Variáveis para o fluxo de redefinição de senha
   String? _emailForPasswordReset;
@@ -34,14 +39,14 @@ class AuthProvider extends ChangeNotifier {
   bool get isForgotPasswordBoxVisible => _isForgotPasswordBoxVisible;
   bool get isNewPasswordBoxVisible => _isNewPasswordBoxVisible;
   bool get isLoading => _isLoading;
-  bool get isAuthenticated => _accessToken != null; // Verifica se há um token de acesso
+  bool get isAuthenticated => _accessToken != null; 
   String? get accessToken => _accessToken;
   String? get userName => _userName;
-  String? get userId => _userId; // Getter para o ID do usuário
-  UserExamsProvider get userExamsProvider => _userExamsProvider; // Getter para o provedor de exames
+  String? get userId => _userId; 
+  UserExamsProvider get userExamsProvider => _userExamsProvider; 
 
   AuthProvider() {
-    _loadUserDataAndExams(); // Carrega dados do usuário e inicializa o provedor de exames
+    _loadUserDataAndExams(); 
   }
 
   // --- Métodos para controle da visibilidade das caixas de autenticação ---
@@ -52,7 +57,8 @@ class AuthProvider extends ChangeNotifier {
     _isNewPasswordBoxVisible = false;
     notifyListeners();
   }
-
+  
+  // ... (métodos animateRegistrationBox, animateForgotPasswordBox, animateNewPasswordBox, backToInitialScreen) ...
   void animateRegistrationBox() {
     _isRegistrationBoxVisible = true;
     _isLoginBoxVisible = false;
@@ -86,6 +92,12 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
   // --- Fim dos métodos de controle da UI ---
+  
+  // 🟢 NOVO: Método auxiliar para inicializar o serviço e enviar o token
+  Future<void> _initializeAndSendToken({required String accessToken}) async {
+    // O serviço de notificação agora gerencia a obtenção e o envio do token FCM
+    await NotificationService().initializeAndGetToken(accessToken);
+  }
 
   // --- Métodos para gerenciamento de dados do usuário e autenticação ---
 
@@ -94,7 +106,7 @@ class AuthProvider extends ChangeNotifier {
     await prefs.setString('accessToken', accessToken);
     await prefs.setString('refreshToken', refreshToken);
     await prefs.setString('userName', userName);
-    await prefs.setString('userId', userId); // Salvar o ID do usuário
+    await prefs.setString('userId', userId); 
     _accessToken = accessToken;
     _refreshToken = refreshToken;
     _userName = userName;
@@ -106,17 +118,17 @@ class AuthProvider extends ChangeNotifier {
     _accessToken = prefs.getString('accessToken');
     _refreshToken = prefs.getString('refreshToken');
     _userName = prefs.getString('userName');
-    _userId = prefs.getString('userId'); // Carregar o ID do usuário
+    _userId = prefs.getString('userId'); 
 
     if (_userId != null && _userId!.isNotEmpty) {
-      await _userExamsProvider.initializeForUser(_userId); // Inicializar provedor de exames para o usuário
+      await _userExamsProvider.initializeForUser(_userId); 
     }
     notifyListeners();
   }
   
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // Limpa todos os dados de SharedPreferences
+    await prefs.clear(); 
 
     _accessToken = null;
     _refreshToken = null;
@@ -129,7 +141,7 @@ class AuthProvider extends ChangeNotifier {
     _isForgotPasswordBoxVisible = false;
     _isNewPasswordBoxVisible = false;
 
-    await _userExamsProvider.closeUserBox(); // Fechar a box do Hive do usuário
+    await _userExamsProvider.closeUserBox(); 
     notifyListeners();
   }
   
@@ -141,9 +153,13 @@ class AuthProvider extends ChangeNotifier {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = json.decode(response.body);
         final user = data['user'];
-        // Usar 'user_id' do objeto 'user'
-        await _saveUserData(data['access_token'], data['refresh_token'], user['name'], user['user_id'].toString());
-        await _userExamsProvider.initializeForUser(_userId); // Inicializar provedor de exames
+        final newAccessToken = data['access_token']; // Pega o novo token
+        
+        await _saveUserData(newAccessToken, data['refresh_token'], user['name'], user['user_id'].toString());
+        await _userExamsProvider.initializeForUser(_userId); 
+        
+        // 🟢 CORREÇÃO: Passa o token novo diretamente para o serviço de notificação
+        await _initializeAndSendToken(accessToken: newAccessToken); 
       }
       return response;
     } finally {
@@ -160,9 +176,13 @@ class AuthProvider extends ChangeNotifier {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = json.decode(response.body);
         final user = data['user'];
-        // Usar 'user_id' do objeto 'user'
-        await _saveUserData(data['access_token'], data['refresh_token'], user['name'], user['user_id'].toString());
-        await _userExamsProvider.initializeForUser(_userId); // Inicializar provedor de exames
+        final newAccessToken = data['access_token']; // Pega o novo token
+        
+        await _saveUserData(newAccessToken, data['refresh_token'], user['name'], user['user_id'].toString());
+        await _userExamsProvider.initializeForUser(_userId); 
+        
+        // 🟢 CORREÇÃO: Passa o token novo diretamente para o serviço de notificação
+        await _initializeAndSendToken(accessToken: newAccessToken); 
       }
       return response;
     } finally {
@@ -175,7 +195,7 @@ class AuthProvider extends ChangeNotifier {
   /// Retorna `true` se bem-sucedido, `false` caso contrário.
   Future<bool> attemptRefreshToken() async {
     if (_refreshToken == null) {
-      return false; // Não há refresh token para usar
+      return false; 
     }
 
     try {
@@ -183,24 +203,26 @@ class AuthProvider extends ChangeNotifier {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = json.decode(response.body);
         if (data.containsKey('access_token')) {
-          // Atualiza apenas o token de acesso (o refresh token geralmente não muda)
+          final newAccessToken = data['access_token'];
+
           final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('accessToken', data['access_token']);
-          _accessToken = data['access_token'];
-          // Após renovar, garante que o UserExamsProvider seja inicializado novamente
-          // caso o accessToken estivesse nulo e o _userId ainda fosse válido.
+          await prefs.setString('accessToken', newAccessToken);
+          _accessToken = newAccessToken;
+          
           if (_userId != null && _userId!.isNotEmpty) {
              await _userExamsProvider.initializeForUser(_userId);
+             
+             // 🟢 CORREÇÃO: Passa o token novo diretamente após o refresh
+             await _initializeAndSendToken(accessToken: newAccessToken);
           }
           notifyListeners();
-          return true; // Sucesso
+          return true; 
         }
       }
       // Se a renovação falhou, limpa o token (o usuário terá que logar novamente)
       await logout(); 
       return false; 
     } catch (e) {
-      // Se a renovação falhou por erro de rede ou outro problema, limpa o token
       await logout();
       return false; 
     }

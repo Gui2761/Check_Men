@@ -1,8 +1,13 @@
+// gui2761/check_men/Check_Men-e15d1b7f40dd23def6eca51b303d67d10e1cbdd7/android/app/build.gradle.kts
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    
+    // Aplicar o plugin do Google Services
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -37,6 +42,13 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+}
+
+dependencies {
+    // Importar o Firebase BOM
+    implementation(platform("com.google.firebase:firebase-bom:32.7.4")) 
+    // Adicionar as dependências do Firebase Messaging
+    implementation("com.google.firebase:firebase-messaging")
 }
 
 flutter {

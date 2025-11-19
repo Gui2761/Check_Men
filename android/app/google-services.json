@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "458706827622",
+    "project_id": "checkmen-saude-masculina",
+    "storage_bucket": "checkmen-saude-masculina.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:458706827622:android:f46454ad0d6fd805ca70a7",
+        "android_client_info": {
+          "package_name": "com.example.checkmen"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFX4WByEF6k_I3qIIH67rygkPJow_E2Mc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

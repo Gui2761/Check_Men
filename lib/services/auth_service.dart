@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api_config.dart'; // Certifique-se de que este import está correto
+import 'package:flutter/foundation.dart'; // Para defaultTargetPlatform
 
 class AuthService {
   Future<void> clearTokens() async {
@@ -39,6 +40,22 @@ class AuthService {
       Uri.parse(ApiConfig.baseUrl + ApiConfig.refreshToken),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(<String, String>{'refresh_token': refreshToken}),
+    );
+    return response;
+  }
+  
+  // 🟢 NOVO: Método para registrar o token FCM no backend
+  Future<http.Response> registerDeviceToken(String deviceToken, String accessToken) async {
+    final response = await http.post(
+      Uri.parse(ApiConfig.baseUrl + ApiConfig.registerDeviceToken),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: jsonEncode(<String, String>{
+        'device_token': deviceToken,
+        'platform': defaultTargetPlatform.toString().split('.').last,
+      }),
     );
     return response;
   }

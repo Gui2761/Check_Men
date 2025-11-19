@@ -1,25 +1,38 @@
+// gui2761/check_men/Check_Men-e15d1b7f40dd23def6eca51b303d67d10e1cbdd7/lib/main.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+
+// 🟢 NOVAS IMPORTAÇÕES DO FIREBASE E SERVIÇO
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart'; 
+import 'services/notification_service.dart'; 
 
 import 'providers/auth_provider.dart';
 import 'providers/user_exams_provider.dart';
 import 'screens/home_screen.dart';
 import 'models/exam.dart';
 
+// Handler de background de nível superior (usado no NotificationService)
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(); 
+  NotificationService().showLocalNotification(message);
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // 🟢 INICIALIZAÇÃO DO FIREBASE (CRÍTICO)
+  await Firebase.initializeApp();
   
   await Hive.initFlutter();
   Hive.registerAdapter(ExamAdapter());
   Hive.registerAdapter(ExamDayAdapter());
 
-  // Abra a Box para ExamDays (existente)
-  // Box<ExamDay> userExamsBox = await Hive.openBox<ExamDay>('user_exams'); // Esta será aberta no provider agora
-  
-  // ABRA UMA NOVA BOX PARA OS EXAMES INDIVIDUAIS
-  await Hive.openBox<Exam>('exams_box'); // <--- NOVA LINHA
+  await Hive.openBox<Exam>('exams_box'); 
 
   runApp(const MyApp());
 }
