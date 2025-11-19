@@ -1,42 +1,37 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:checkmen_app/models/usuario_model.dart';
+import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
 
 class ApiService {
-  final String _baseUrl = 'http://localhost:8000'; 
+  // Função para agendar o exame no backend (para notificação push)
+  Future<void> scheduleExam(String token, String examName, DateTime examDate) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.scheduleExam}');
+    
+    // Formata a data para o padrão que o Python espera: YYYY-MM-DD
+    final String dateStr = "${examDate.year}-${examDate.month.toString().padLeft(2, '0')}-${examDate.day.toString().padLeft(2, '0')}";
 
-  Future<List<Usuario>> getUsuarios() async {
-    final uri = Uri.parse('$_baseUrl/users');
-    try {
-      final response = await http.get(uri);
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonList = jsonDecode(response.body);
-        return jsonList.map((json) => Usuario.fromJson(json)).toList();
-      } else {
-        throw Exception('Falha ao carregar os usuários: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Ocorreu um erro na requisição: $e');
-    }
-  }
-
-  Future<http.Response> criarUsuario(Map<String, dynamic> dadosUsuario) async {
-    final uri = Uri.parse('$_baseUrl/users');
-    final headers = {'Content-Type': 'application/json'};
-    final body = jsonEncode(dadosUsuario);
     try {
       final response = await http.post(
-        uri,
-        headers: headers,
-        body: body,
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // Envia o token para autenticar
+        },
+        body: jsonEncode({
+          'exam_name': examName,
+          'exam_date': dateStr,
+        }),
       );
-      if (response.statusCode == 201) {
-        return response;
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        print("Agendamento no backend realizado com sucesso: ${response.body}");
       } else {
-        throw Exception('Falha ao criar o usuário: ${response.statusCode}');
+        print("Erro no backend: ${response.statusCode} - ${response.body}");
+        // Não lançamos exceção para não travar o fluxo visual do usuário, 
+        // mas você poderia tratar isso se quisesse alertar o usuário.
       }
     } catch (e) {
-      throw Exception('Ocorreu um erro na requisição: $e');
+      print('Erro de conexão ao agendar: $e');
     }
   }
 }

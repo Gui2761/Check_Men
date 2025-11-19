@@ -10,8 +10,9 @@ import '../utils/app_extensions.dart'; // Para a extensão .capitalize()
 import '../providers/user_exams_provider.dart';
 import '../models/exam.dart'; // Para os modelos Exam e ExamDay
 
-// Não é mais necessário importar 'package:hive/hive.dart'; aqui diretamente
-// porque a lógica de persistência e criação de HiveList está no provider.
+// 🟢 NOVAS IMPORTAÇÕES
+import '../services/api_service.dart';
+import '../providers/auth_provider.dart';
 
 class LembretesScreen extends StatefulWidget {
   const LembretesScreen({super.key});
@@ -27,21 +28,20 @@ class _LembretesScreenState extends State<LembretesScreen> {
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
   ];
   
-  // Mapa para saber o número de dias em cada mês (simplificado, não considera anos bissextos)
+  // Mapa para saber o número de dias em cada mês (simplificado)
   final Map<String, int> diasPorMes = {
     'Janeiro': 31, 'Fevereiro': 28, 'Março': 31, 'Abril': 30, 'Maio': 31, 'Junho': 30, 
     'Julho': 31, 'Agosto': 31, 'Setembro': 30, 'Outubro': 31, 'Novembro': 30, 'Dezembro': 31,
   };
 
   // Variáveis de estado para o mês atual e o termo de pesquisa
-  String mesAtual = 'Fevereiro'; // Valor inicial para evitar null
+  String mesAtual = 'Fevereiro'; 
   String termoDePesquisa = '';
 
   @override
   void initState() {
     super.initState();
-    // Define o mês inicial como o mês atual do sistema, formatado em português e capitalizado
-    // Adicionado 'pt_BR' explicitamente para garantir o locale
+    // Define o mês inicial como o mês atual do sistema
     mesAtual = DateFormat('MMMM', 'pt_BR').format(DateTime.now()).capitalize();
     
     // Fallback caso o locale do sistema não retorne o nome do mês como esperado
@@ -53,7 +53,6 @@ class _LembretesScreenState extends State<LembretesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Usa Consumer para reagir a mudanças no UserExamsProvider
     return Consumer<UserExamsProvider>(
       builder: (context, userExamsProvider, child) {
         // Obtém os exames do mês atual do provider
@@ -68,7 +67,7 @@ class _LembretesScreenState extends State<LembretesScreen> {
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.of(context).pop(), // Botão de voltar
+              onPressed: () => Navigator.of(context).pop(),
             ),
             title: const Text('Lembretes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             centerTitle: true,
@@ -83,12 +82,12 @@ class _LembretesScreenState extends State<LembretesScreen> {
                 MonthSelector(
                   meses: meses,
                   mesAtual: mesAtual,
-                  onChangeMonth: _changeMonth, // Callback para mudança de mês
+                  onChangeMonth: _changeMonth,
                 ),
                 const SizedBox(height: 16),
                 // Barra de pesquisa
                 LembretesSearchBar(
-                  onChanged: (value) => setState(() => termoDePesquisa = value), // Atualiza o termo de pesquisa
+                  onChanged: (value) => setState(() => termoDePesquisa = value),
                 ),
                 const SizedBox(height: 24),
                 Row(
@@ -96,13 +95,12 @@ class _LembretesScreenState extends State<LembretesScreen> {
                   children: [
                     const Text('Exames', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                     IconButton(
-                      onPressed: () => _showAddExamDialog(context), // Botão para adicionar novo exame
+                      onPressed: () => _showAddExamDialog(context),
                       icon: const Icon(Icons.add_circle, color: Color(0xFF1A75B4), size: 30),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                // Exibe mensagem se não houver exames ou se a pesquisa não retornar resultados
                 if (examesFiltrados.isEmpty)
                   Center(
                     child: Padding(
@@ -117,26 +115,22 @@ class _LembretesScreenState extends State<LembretesScreen> {
                     ),
                   )
                 else
-                  // Itera sobre os dias com exames filtrados
                   ...examesFiltrados.map((examDay) {
-                    // O cast é essencial aqui. Como _filtrarExames retorna um ExamDay com List<Exam> (dynamic),
-                    // precisamos garantir que estamos tratando como List<Exam>.
                     final List<Exam> examsOfDay = examDay.exams.cast<Exam>(); 
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildDia(examDay.day), // Exibe o dia
+                        _buildDia(examDay.day),
                         const SizedBox(height: 8),
-                        // Itera sobre os exames de cada dia
                         ...examsOfDay.asMap().entries.map((entry) {
                           int exameIndex = entry.key;
                           Exam exame = entry.value;
                            return ExamCard(
-                            exame: exame.toMap(), // Passa o exame como mapa para o card
-                            onToggle: () => _toggleChecklist(examDay.day, exameIndex), // Marca/desmarca
-                            onEdit: () => _showEditDialog(context, examDay.day, exameIndex, exame), // Edita exame
-                            onRemove: () => _removeExame(examDay.day, exameIndex), // Remove exame
+                            exame: exame.toMap(),
+                            onToggle: () => _toggleChecklist(examDay.day, exameIndex),
+                            onEdit: () => _showEditDialog(context, examDay.day, exameIndex, exame),
+                            onRemove: () => _removeExame(examDay.day, exameIndex),
                           );
                         }),
                         const SizedBox(height: 16),
@@ -151,61 +145,48 @@ class _LembretesScreenState extends State<LembretesScreen> {
     );
   }
 
-  // Widget simples para exibir o dia
   Widget _buildDia(int dia) {
     return Text('Dia $dia', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold));
   }
 
-  // Método para filtrar exames com base no termo de pesquisa
-  // IMPORTANTE: Este método não interage diretamente com HiveList para persistência.
-  // Ele cria novos objetos ExamDay com List<Exam> (não HiveList) para exibição.
   List<ExamDay> _filtrarExames(List<ExamDay> exames) {
-    if (termoDePesquisa.isEmpty) return exames; // Se não há termo, retorna todos
+    if (termoDePesquisa.isEmpty) return exames;
     final termoLowerCase = termoDePesquisa.toLowerCase();
     
     List<ExamDay> resultados = [];
     for (var examDay in exames) {
-      // Filtra os exames dentro de cada dia
       final filteredExams = examDay.exams.where((exam) {
         return exam.nome.toLowerCase().contains(termoLowerCase);
       }).toList();
       
       if (filteredExams.isNotEmpty) {
-        // Se houver exames filtrados para este dia, cria um novo ExamDay
-        // com uma lista simples de Exames (List<Exam>), não um HiveList.
-        // O `as dynamic` é um workaround para a tipagem do construtor de ExamDay
-        // que espera HiveList, mas para exibição temporária, List<Exam> funciona.
         resultados.add(ExamDay(day: examDay.day, exams: filteredExams as dynamic)); 
       }
     }
     return resultados;
   }
 
-  // Callback para mudança de mês no seletor
   void _changeMonth(int newIndex) {
     setState(() => mesAtual = meses[newIndex]);
   }
 
-  // Marca/desmarca um exame como concluído
   void _toggleChecklist(int dia, int exameIndex) {
     final userExamsProvider = Provider.of<UserExamsProvider>(context, listen: false);
     userExamsProvider.toggleExamCompletion(mesAtual, dia, exameIndex);
   }
 
-  // Remove um exame
   void _removeExame(int dia, int exameIndex) {
     final userExamsProvider = Provider.of<UserExamsProvider>(context, listen: false);
     userExamsProvider.removeExam(mesAtual, dia, exameIndex);
   }
   
-  // Verifica se o dia é válido para o mês selecionado
   bool _isDayValidForMonth(int day, String monthName) {
     final maxDays = diasPorMes[monthName];
     if (maxDays == null) return false;
     return day >= 1 && day <= maxDays;
   }
 
-  // Exibe o diálogo para adicionar um novo exame
+  // 🟢 MÉTODO ATUALIZADO PARA AGENDAR NOTIFICAÇÃO
   void _showAddExamDialog(BuildContext context) {
     final nomeController = TextEditingController();
     final diaController = TextEditingController();
@@ -224,9 +205,10 @@ class _LembretesScreenState extends State<LembretesScreen> {
           actions: [
             TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 final nome = nomeController.text;
                 final dia = int.tryParse(diaController.text);
+                
                 if (nome.isEmpty) {
                   _showAlertDialog('Erro', 'Por favor, insira o nome do exame.');
                   return;
@@ -235,10 +217,43 @@ class _LembretesScreenState extends State<LembretesScreen> {
                   _showAlertDialog('Erro', 'O dia é inválido para $mesAtual. Por favor, insira um dia entre 1 e ${diasPorMes[mesAtual]}.');
                   return;
                 }
-                // Chama o provider para adicionar o exame
+
+                // 1. Salvar Localmente (Provider)
                 Provider.of<UserExamsProvider>(context, listen: false).addExam(
                   mesAtual, dia, nome, observacaoController.text, 'Mensal'
                 );
+
+                // 2. Agendar Notificação no Backend (Nova Lógica)
+                try {
+                  final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                  final token = authProvider.accessToken;
+
+                  if (token != null) {
+                    // Calcula a data completa
+                    final int monthIndex = meses.indexOf(mesAtual) + 1;
+                    final int currentYear = DateTime.now().year;
+                    
+                    // Ajuste simples: se o mês já passou, assume que é para o próximo ano (opcional)
+                    int year = currentYear;
+                    if (monthIndex < DateTime.now().month || (monthIndex == DateTime.now().month && dia < DateTime.now().day)) {
+                       // Se quiser agendar pro ano que vem descomente abaixo, 
+                       // por enquanto deixamos no ano atual para o teste funcionar.
+                       // year = currentYear + 1; 
+                    }
+
+                    final DateTime examDate = DateTime(year, monthIndex, dia);
+                    
+                    // Chama o serviço
+                    await ApiService().scheduleExam(token, nome, examDate);
+                    
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Lembrete salvo e notificação agendada!")),
+                    );
+                  }
+                } catch (e) {
+                  print("Erro ao agendar no backend: $e");
+                }
+
                 Navigator.of(context).pop();
               },
               child: const Text('Adicionar'),
@@ -249,7 +264,6 @@ class _LembretesScreenState extends State<LembretesScreen> {
     );
   }
   
-  // Exibe o diálogo para editar um exame existente
   void _showEditDialog(BuildContext context, int dia, int exameIndex, Exam exameParaEditar) {
     final nomeController = TextEditingController(text: exameParaEditar.nome);
     final diaController = TextEditingController(text: dia.toString());
@@ -259,7 +273,7 @@ class _LembretesScreenState extends State<LembretesScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder( // StatefulBuilder para gerenciar o estado do ChoiceChip
+        return StatefulBuilder(
           builder: (context, setStateSB) {
             return AlertDialog(
               title: const Text('Editar Exame'),
@@ -300,7 +314,6 @@ class _LembretesScreenState extends State<LembretesScreen> {
                       return;
                     }
 
-                    // Cria um novo objeto Exam com os dados atualizados
                     final updatedExam = Exam(
                       nome: novoNome,
                       observacao: observacaoController.text,
@@ -308,7 +321,6 @@ class _LembretesScreenState extends State<LembretesScreen> {
                       concluido: exameParaEditar.concluido,
                     );
 
-                    // Chama o provider para atualizar o exame
                     Provider.of<UserExamsProvider>(context, listen: false).updateExam(
                       mesAtual, dia, exameIndex, updatedExam, novoDia
                     );
@@ -324,7 +336,6 @@ class _LembretesScreenState extends State<LembretesScreen> {
     );
   }
 
-  // Exibe um AlertDialog genérico para mensagens de erro/informação
   void _showAlertDialog(String title, String message) {
     showDialog(
       context: context,

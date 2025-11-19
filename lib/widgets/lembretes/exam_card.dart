@@ -18,21 +18,79 @@ class ExamCard extends StatelessWidget {
   Widget build(BuildContext context) {
     bool concluido = exame['concluido'] ?? false;
     String nome = exame['nome'] ?? 'Sem nome';
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: const Color(0xFFF0F0F0), borderRadius: BorderRadius.circular(10)),
+    
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: concluido ? const Color(0xFFE8F5E9) : Colors.white, // Fundo verde claro se concluído
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: concluido ? Colors.green.withOpacity(0.5) : Colors.grey.withOpacity(0.2),
+          width: 1
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          )
+        ]
+      ),
       child: Row(
         children: [
-          Checkbox(value: concluido, onChanged: (_) => onToggle(), activeColor: const Color(0xFF1A75B4), side: const BorderSide(color: Color(0xFF1A75B4))),
-          const SizedBox(width: 8),
+          // Checkbox customizado e maior para facilitar o toque
+          GestureDetector(
+            onTap: onToggle,
+            child: Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: concluido ? Colors.green : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: concluido ? Colors.green : Colors.grey,
+                  width: 2
+                ),
+              ),
+              child: concluido 
+                ? const Icon(Icons.check, size: 18, color: Colors.white)
+                : null,
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Área de texto clicável para editar
           Expanded(
             child: GestureDetector(
               onTap: onEdit,
-              child: Text(nome, style: TextStyle(fontSize: 16, decoration: concluido ? TextDecoration.lineThrough : TextDecoration.none)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    nome, 
+                    style: TextStyle(
+                      fontSize: 16, 
+                      fontWeight: FontWeight.w600,
+                      color: concluido ? Colors.grey : Colors.black87,
+                      decoration: concluido ? TextDecoration.lineThrough : TextDecoration.none
+                    )
+                  ),
+                  if (exame['recorrencia'] != null)
+                    Text(
+                      exame['recorrencia'],
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                ],
+              ),
             ),
           ),
-          IconButton(onPressed: onRemove, icon: const Icon(Icons.close, color: Colors.black54)),
+          // Botão de remover com cor de destaque
+          IconButton(
+            onPressed: onRemove, 
+            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+            tooltip: "Remover exame",
+          ),
         ],
       ),
     );

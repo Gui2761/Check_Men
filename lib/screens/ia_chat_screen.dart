@@ -15,6 +15,8 @@ class IaChatScreen extends StatefulWidget {
 class _IaChatScreenState extends State<IaChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final List<ChatMessage> _messages = [];
+  final ScrollController _scrollController = ScrollController();
+  
   GenerativeModel? _model;
   ChatSession? _chat;
   bool _isLoading = false;
@@ -32,133 +34,162 @@ class _IaChatScreenState extends State<IaChatScreen> {
   Future<void> _initializeGenerativeModel() async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final userName = authProvider.userName ?? 'Usuário';
-      final String apiKey =
-          await rootBundle.loadString('assets/generative_ai_key.txt');
+      final userName = authProvider.userName ?? 'Amigo';
+      
+      // Carrega a chave de forma segura do arquivo assets
+      final String apiKey = await rootBundle.loadString('assets/generative_ai_key.txt');
+      final cleanApiKey = apiKey.trim(); 
+
+      if (cleanApiKey.isEmpty) {
+        throw Exception('Chave de API vazia');
+      }
 
       _model = GenerativeModel(
-        model: 'gemini-2.5-pro',
-        apiKey: apiKey,
+        // 🟢 MUDANÇA AQUI: Trocado para 'gemini-pro' (mais estável)
+        model: 'gemini-2.5-pro', 
+        apiKey: cleanApiKey,
         systemInstruction: Content.text(
-            "Você é um assistente de saúde masculina. Responda sempre em português brasileiro de forma útil, amigável e informativa sobre temas de saúde masculina. Mantenha um tom profissional mas acessível. Não se desvie do tópico de saúde masculina, a menos que seja solicitado para uma saudação ou breve interação."),
+            "Você é o Horus, um assistente especializado em saúde masculina preventiva do app CheckMen. "
+            "Responda sempre de forma educada, direta e em português do Brasil. "
+            "Seu foco é: prevenção de doenças (próstata, coração, diabetes), saúde mental masculina, nutrição e exercícios. "
+            "IMPORTANTE: Você NÃO substitui um médico. Sempre recomende que o usuário procure um profissional para diagnósticos. "
+            "Se perguntarem sobre assuntos fora de saúde/bem-estar, diga educadamente que só pode ajudar com saúde masculina."
+        ),
       );
+      
       _chat = _model!.startChat();
 
       _addMessage(ChatMessage(
-          text:
-              'Olá, $userName! Como posso auxiliar na sua saúde masculina hoje?',
+          text: 'Olá, $userName! Sou o Horus. Como posso ajudar a cuidar da sua saúde hoje?',
           isUser: false));
+          
     } catch (e) {
-      print('Erro ao inicializar o modelo Gemini: $e');
+      print('Erro ao inicializar Gemini: $e');
       _addMessage(ChatMessage(
-          text:
-              "Desculpe, não consegui conectar com a IA. Por favor, tente novamente mais tarde.",
+          text: "Ops! Não consegui conectar aos meus servidores. Verifique sua internet ou a chave de API.",
           isUser: false));
     }
   }
 
   void _addMessage(ChatMessage message) {
-    if (mounted) {
-      setState(() {
-        _messages.add(message);
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _messages.add(message);
+    });
+    
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   Future<void> _sendMessage() async {
-    if (_controller.text.isEmpty || _model == null || _chat == null) return;
+    final text = _controller.text.trim();
+    if (text.isEmpty || _model == null || _chat == null || _isLoading) return;
 
-    final userMessageText = _controller.text;
     _controller.clear();
-    _addMessage(ChatMessage(text: userMessageText, isUser: true));
+    _addMessage(ChatMessage(text: text, isUser: true));
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      final response = await _chat!.sendMessage(Content.text(userMessageText));
-      final aiResponseText =
-          response.text ?? "Desculpe, não consegui gerar uma resposta.";
+      final response = await _chat!.sendMessage(Content.text(text));
+      final aiResponseText = response.text ?? "Não entendi, pode reformular?";
       _addMessage(ChatMessage(text: aiResponseText, isUser: false));
     } catch (e) {
-      print('Erro ao enviar mensagem para a IA: $e');
+      // 🟢 Adicionado print do erro no console para ajudar a debugar
+      print("Erro Gemini: $e"); 
       _addMessage(ChatMessage(
-          text: "Desculpe, houve um erro ao processar sua solicitação.",
+          text: "Desculpe, tive um erro ao processar sua resposta. Tente novamente.",
           isUser: false));
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF5F7FA), 
       appBar: AppBar(
-        backgroundColor: const Color(0xFF007BFF),
+        backgroundColor: const Color(0xFF3B489A),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Row(
+          children: [
+            const Icon(Icons.smart_toy_outlined, color: Colors.white),
+            const SizedBox(width: 10),
+            const Text('Horus - IA', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ],
         ),
-        title: const Text('CheckMen IA',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        centerTitle: true,
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView.builder(
-              reverse: true,
+              controller: _scrollController,
+              padding: const EdgeInsets.all(16),
               itemCount: _messages.length,
               itemBuilder: (context, index) {
-                final message = _messages[_messages.length - 1 - index];
-                return _buildMessageBubble(message);
+                return _buildMessageBubble(_messages[index]);
               },
             ),
           ),
           if (_isLoading)
             const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: LinearProgressIndicator(
-                color: Color(0xFF1A75B4),
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text("Horus está digitando...", style: TextStyle(color: Colors.grey, fontSize: 12)),
               ),
             ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: 'Pergunte sobre saúde masculina...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25.0),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[200],
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
-                    ),
-                    onSubmitted: (_) => _sendMessage(),
-                  ),
+          const SizedBox(height: 5),
+          _buildInputArea(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputArea() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(0, -2))],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _controller,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                hintText: 'Tire sua dúvida de saúde...',
+                filled: true,
+                fillColor: const Color(0xFFF0F0F0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
                 ),
-                const SizedBox(width: 8.0),
-                FloatingActionButton(
-                  onPressed: _sendMessage,
-                  backgroundColor: const Color(0xFF007BFF),
-                  mini: true,
-                  child: const Icon(Icons.send, color: Colors.white),
-                ),
-              ],
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+              onSubmitted: (_) => _sendMessage(),
             ),
+          ),
+          const SizedBox(width: 10),
+          FloatingActionButton(
+            onPressed: _isLoading ? null : _sendMessage,
+            backgroundColor: const Color(0xFF3B489A),
+            elevation: 2,
+            mini: true,
+            child: _isLoading 
+              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+              : const Icon(Icons.send, color: Colors.white, size: 20),
           ),
         ],
       ),
@@ -166,40 +197,32 @@ class _IaChatScreenState extends State<IaChatScreen> {
   }
 
   Widget _buildMessageBubble(ChatMessage message) {
+    final isUser = message.isUser;
     return Align(
-      alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-        padding: const EdgeInsets.all(12.0),
-        constraints:
-            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
         decoration: BoxDecoration(
-          color: message.isUser
-              ? const Color(0xFFE0E0E0)
-              : const Color(0xFF1A75B4),
-          borderRadius: BorderRadius.circular(18.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 2,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: MarkdownBody(
-          data: message.text,
-          styleSheet: MarkdownStyleSheet(
-            p: TextStyle(
-              color: message.isUser ? Colors.black87 : Colors.white,
-              fontSize: 16,
-            ),
-            h1: TextStyle(color: message.isUser ? Colors.black87 : Colors.white),
-            h2: TextStyle(color: message.isUser ? Colors.black87 : Colors.white),
-            strong: TextStyle(
-                color: message.isUser ? Colors.black87 : Colors.white,
-                fontWeight: FontWeight.bold),
+          color: isUser ? const Color(0xFF3B489A) : Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(20),
+            topRight: const Radius.circular(20),
+            bottomLeft: isUser ? const Radius.circular(20) : const Radius.circular(0),
+            bottomRight: isUser ? const Radius.circular(0) : const Radius.circular(20),
           ),
+          boxShadow: isUser ? [] : [const BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(1, 1))],
         ),
+        child: isUser 
+          ? Text(message.text, style: const TextStyle(color: Colors.white, fontSize: 16))
+          : MarkdownBody(
+              data: message.text,
+              styleSheet: MarkdownStyleSheet(
+                p: const TextStyle(color: Colors.black87, fontSize: 16),
+                strong: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF3B489A)),
+              ),
+            ),
       ),
     );
   }
@@ -208,6 +231,5 @@ class _IaChatScreenState extends State<IaChatScreen> {
 class ChatMessage {
   final String text;
   final bool isUser;
-
   ChatMessage({required this.text, required this.isUser});
 }

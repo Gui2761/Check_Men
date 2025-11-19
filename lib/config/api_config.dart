@@ -1,5 +1,5 @@
 class ApiConfig {
-  static const String baseUrl = 'http://192.168.1.100:8000'; // Lembre-se de usar seu IP
+  static const String baseUrl = 'http://192.168.1.100:8000'; // Seu IP configurado
 
   // Auth Endpoints
   static const String register = '/auth/register';
@@ -7,14 +7,11 @@ class ApiConfig {
   static const String resetPassword = '/auth/reset-password';
   static const String verifySecurityWord = '/auth/verify-security-word';
   static const String refreshToken = '/auth/refresh-token';
-  static const String registerDeviceToken = '/auth/device-token'; // 🟢 NOVO
+  static const String registerDeviceToken = '/auth/device-token';
+
+  // 🟢 Endpoint de agendamento de notificações
+  static const String scheduleExam = '/auth/schedule-exam-test';
 
   // News Endpoint
-  static const String rssNews = '/rss/'; // <-- ADICIONE ESTA LINHA
+  static const String rssNews = '/rss/';
 }
-
-// para fucionar no celular
-// uvicorn app.main:app --reload --host 0.0.0.0
-// 'http://SEU_IP_AQUI:8000';
-// ipconfig
-// venv\Scripts\activate http://localhost:8000
