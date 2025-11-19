@@ -1,5 +1,3 @@
-// gui2761/check_men/Check_Men-e15d1b7f40dd23def6eca51b303d67d10e1cbdd7/android/app/build.gradle.kts
-
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -16,6 +14,9 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // 🟢 CORREÇÃO: Ativa o desugaring para suportar recursos do Java 8+ usados pelo flutter_local_notifications
+        isCoreLibraryDesugaringEnabled = true
+
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -45,6 +46,9 @@ android {
 }
 
 dependencies {
+    // 🟢 CORREÇÃO: Ferramenta necessária para o desugaring funcionar
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
     // Importar o Firebase BOM
     implementation(platform("com.google.firebase:firebase-bom:32.7.4")) 
     // Adicionar as dependências do Firebase Messaging

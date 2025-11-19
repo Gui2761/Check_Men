@@ -19,15 +19,18 @@ dependencies:
   shared_preferences: ^2.2.0
   url_launcher: ^6.1.10
   flutter_html: ^3.0.0-beta.2
-  intl: 0.20.2 # Adicionado para formatação de data
-  collection: ^1.18.0 # Adicionado para firstWhereOrNull
-  google_generative_ai: ^0.4.7 # Para o SDK do Gemini
+  intl: 0.20.2 
+  collection: ^1.18.0 
+  google_generative_ai: ^0.4.7 
   flutter_markdown: ^0.7.0
 
   # 🟢 NOVO: Adicionar Firebase
-  firebase_core: ^2.27.1  # Core do Firebase
-  firebase_messaging: ^14.8.4 # Messaging/Push
+  firebase_core: ^2.27.1  
+  firebase_messaging: ^14.8.4 
   
+  # 🟢 CORREÇÃO: Adicionar Notificações Locais (necessário para o erro anterior)
+  flutter_local_notifications: ^17.0.0
+
   # Dependências do Hive para salvar dados
   hive: ^2.2.3
   hive_flutter: ^1.1.0
