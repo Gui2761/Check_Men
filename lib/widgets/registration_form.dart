@@ -37,7 +37,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
       return;
     }
 
-    // A validação que você pediu, para o nome de usuário
     if (_usernameController.text.length < 2) {
       _showSnackbar('O nome deve ter pelo menos 2 caracteres.', isError: true);
       return;
@@ -53,7 +52,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
       return;
     }
     
-    // Agora o código para registrar
     final response = await auth.register(
       _usernameController.text,
       _emailController.text,
@@ -67,12 +65,10 @@ class _RegistrationFormState extends State<RegistrationForm> {
       auth.backToInitialScreen(context);
     } else {
       final data = json.decode(response.body);
-      // Tentando extrair a mensagem de erro de forma mais robusta
       String errorMessage = 'Erro ao registrar. Tente novamente.';
       if (data != null && data['detail'] is String) {
         errorMessage = 'Erro: ${data['detail']}';
       } else if (data != null && data['detail'] is List && data['detail'].isNotEmpty) {
-        // Se 'detail' é uma lista (como no seu erro 422 anterior)
         final firstDetail = data['detail'][0];
         if (firstDetail is Map && firstDetail.containsKey('msg')) {
           errorMessage = 'Erro: ${firstDetail['msg']}';
@@ -216,11 +212,19 @@ class _RegistrationFormState extends State<RegistrationForm> {
                   backgroundColor: const Color(0xFF3B489A),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
+                // 🟢 CORREÇÃO AQUI: Tamanho fixo para o loader
                 child: auth.isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
                     : const Text(
                         'Registrar',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                       ),
               ),
             ),

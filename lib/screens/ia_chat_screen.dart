@@ -4,6 +4,8 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/user_exams_provider.dart'; // 🟢 Necessário para ler os exames
+import '../models/exam.dart'; // 🟢 Necessário para ler os modelos
 
 class IaChatScreen extends StatefulWidget {
   const IaChatScreen({super.key});
@@ -31,12 +33,58 @@ class _IaChatScreenState extends State<IaChatScreen> {
     }
   }
 
+  // 🟢 NOVA FUNÇÃO: Cria o contexto dos exames para a IA
+  String _buildUserContext() {
+    try {
+      final examProvider = Provider.of<UserExamsProvider>(context, listen: false);
+      final buffer = StringBuffer();
+      
+      buffer.writeln("DADOS DO USUÁRIO (Use para contextualizar as respostas):");
+      
+      // Data de hoje para a IA saber se o exame está perto
+      final now = DateTime.now();
+      buffer.writeln("Data de hoje: ${now.day}/${now.month}/${now.year}");
+      buffer.writeln("Lista de Exames Agendados:");
+
+      bool temExames = false;
+
+      // Varre todos os meses e dias em busca de exames
+      for (String mes in examProvider.meses) {
+        final examesDoMes = examProvider.getExamsForMonth(mes);
+        if (examesDoMes.isNotEmpty) {
+          for (var examDay in examesDoMes) {
+            for (var exame in examDay.exams) {
+              temExames = true;
+              final status = exame.concluido ? "Concluído" : "Pendente";
+              buffer.writeln("- Exame: ${exame.nome}");
+              buffer.writeln("  Data: Dia ${examDay.day} de $mes");
+              buffer.writeln("  Status: $status");
+              if (exame.observacao.isNotEmpty) {
+                buffer.writeln("  Obs: ${exame.observacao}");
+              }
+              buffer.writeln(""); // Linha em branco
+            }
+          }
+        }
+      }
+
+      if (!temExames) {
+        buffer.writeln("O usuário ainda não tem exames agendados.");
+      }
+
+      return buffer.toString();
+    } catch (e) {
+      print("Erro ao gerar contexto: $e");
+      return "";
+    }
+  }
+
   Future<void> _initializeGenerativeModel() async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final userName = authProvider.userName ?? 'Amigo';
       
-      // Carrega a chave de forma segura do arquivo assets
+      // Carrega a chave
       final String apiKey = await rootBundle.loadString('assets/generative_ai_key.txt');
       final cleanApiKey = apiKey.trim(); 
 
@@ -44,23 +92,32 @@ class _IaChatScreenState extends State<IaChatScreen> {
         throw Exception('Chave de API vazia');
       }
 
+      // 🟢 Gera o contexto dos exames
+      final String userExamsContext = _buildUserContext();
+
       _model = GenerativeModel(
-        // 🟢 MUDANÇA AQUI: Trocado para 'gemini-pro' (mais estável)
         model: 'gemini-2.5-pro', 
         apiKey: cleanApiKey,
         systemInstruction: Content.text(
             "Você é o Horus, um assistente especializado em saúde masculina preventiva do app CheckMen. "
             "Responda sempre de forma educada, direta e em português do Brasil. "
-            "Seu foco é: prevenção de doenças (próstata, coração, diabetes), saúde mental masculina, nutrição e exercícios. "
-            "IMPORTANTE: Você NÃO substitui um médico. Sempre recomende que o usuário procure um profissional para diagnósticos. "
-            "Se perguntarem sobre assuntos fora de saúde/bem-estar, diga educadamente que só pode ajudar com saúde masculina."
+            "Seu foco é: prevenção de doenças, saúde mental, nutrição e orientações sobre exames. "
+            "IMPORTANTE: Você NÃO substitui um médico. Sempre recomende um profissional para diagnósticos.\n\n"
+            
+            // 🟢 INJEÇÃO DO CONTEXTO AQUI
+            "$userExamsContext\n\n"
+            
+            "Instruções Específicas:\n"
+            "1. Se o usuário perguntar sobre 'meus exames', liste o que você sabe baseados nos dados acima.\n"
+            "2. Se houver um exame próximo, dê dicas de preparo (ex: jejum para exame de sangue) se souber.\n"
+            "3. Se o usuário não tiver exames, incentive o check-up preventivo."
         ),
       );
       
       _chat = _model!.startChat();
 
       _addMessage(ChatMessage(
-          text: 'Olá, $userName! Sou o Horus. Como posso ajudar a cuidar da sua saúde hoje?',
+          text: 'Olá, $userName! Sou o Horus. Vejo seus exames agendados aqui. Como posso ajudar a cuidar da sua saúde hoje?',
           isUser: false));
           
     } catch (e) {
@@ -102,7 +159,6 @@ class _IaChatScreenState extends State<IaChatScreen> {
       final aiResponseText = response.text ?? "Não entendi, pode reformular?";
       _addMessage(ChatMessage(text: aiResponseText, isUser: false));
     } catch (e) {
-      // 🟢 Adicionado print do erro no console para ajudar a debugar
       print("Erro Gemini: $e"); 
       _addMessage(ChatMessage(
           text: "Desculpe, tive um erro ao processar sua resposta. Tente novamente.",
@@ -149,7 +205,10 @@ class _IaChatScreenState extends State<IaChatScreen> {
               ),
             ),
           const SizedBox(height: 5),
-          _buildInputArea(),
+          SafeArea(
+            top: false, 
+            child: _buildInputArea(),
+          ),
         ],
       ),
     );

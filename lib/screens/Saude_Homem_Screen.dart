@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import 'home_screen.dart'; // Assumindo que Home é a tela de Login/Boas-Vindas
+import 'home_screen.dart'; 
 import 'noticias_screen.dart';
 import 'lembretes_screen.dart'; 
-
-// Importe a nova tela de IA
-import 'ia_chat_screen.dart'; // <--- NOVA IMPORTAÇÃO AQUI
+import 'ia_chat_screen.dart'; 
+import 'saude_educacional_screen.dart'; 
 
 class SaudeHomemScreen extends StatefulWidget {
   const SaudeHomemScreen({super.key});
@@ -25,9 +24,9 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false, 
         title: Image.asset(
@@ -37,7 +36,7 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.menu, color: Colors.black),
+            icon: const Icon(Icons.menu, color: Colors.black87),
             onPressed: () {
               _scaffoldKey.currentState?.openEndDrawer(); 
             },
@@ -47,34 +46,56 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
       endDrawer: Drawer(
         child: Column(
           children: [
+            // 🟢 CORREÇÃO: Cabeçalho manual (Container) para evitar Overflow
+            Container(
+              width: double.infinity,
+              // Padding manual para ajustar a altura sem travar
+              padding: const EdgeInsets.fromLTRB(16, 60, 16, 20), 
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF007BFF), Color(0xFF0056B3)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min, // Ocupa o mínimo necessário
+                children: [
+                  const CircleAvatar(
+                    backgroundColor: Colors.white24,
+                    radius: 35,
+                    child: Icon(Icons.person, size: 40, color: Colors.white),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Olá, $userName',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            
+            // Itens do Menu
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
-                  SizedBox(
-                    height: 120, 
-                    child: DrawerHeader(
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF007BFF),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Olá, $userName',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
                   ListTile(
                     leading: const Icon(Icons.monitor_heart_outlined),
                     title: const Text('Saúde Masculina'),
                     onTap: () {
-                      
                       Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SaudeEducacionalScreen()),
+                      );
                     },
                   ),
                   ListTile(
@@ -99,7 +120,6 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
                       );
                     },
                   ),
-          
                   ListTile(
                     leading: const Icon(Icons.smart_toy_outlined),
                     title: const Text('IA Horus'), 
@@ -115,40 +135,54 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
               ),
             ),
             const Divider(), 
-            ListTile(
-              leading: const Icon(Icons.exit_to_app, color: Colors.red),
-              title: const Text('Sair'),
-              onTap: () {
-                authProvider.logout();
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const HomeScreen()), 
-                  (Route<dynamic> route) => false, 
-                );
-              },
+            SafeArea(
+              top: false, 
+              child: ListTile(
+                leading: const Icon(Icons.exit_to_app, color: Colors.red),
+                title: const Text('Sair', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  authProvider.logout();
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const HomeScreen()), 
+                    (Route<dynamic> route) => false, 
+                  );
+                },
+              ),
             ),
-            const SizedBox(height: 20), 
+            const SizedBox(height: 10), 
           ],
         ),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 20),
-              Center(
-                child: Text(
-                  'Bem-vindo ao CheckMen, $userName',
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+              const SizedBox(height: 10),
+              Text(
+                'Bem-vindo, $userName 👋',
+                style: const TextStyle(
+                  fontSize: 26, 
+                  fontWeight: FontWeight.bold, 
+                  color: Colors.black87
                 ),
+                textAlign: TextAlign.left,
               ),
-              const SizedBox(height: 32),
+              const Text(
+                'Cuide de você hoje.',
+                style: TextStyle(
+                  fontSize: 16, 
+                  color: Colors.grey
+                ),
+                textAlign: TextAlign.left,
+              ),
+              const SizedBox(height: 30),
               
               AnimatedFeatureCard(
                 title: 'Lembretes',
-                subtitle: 'Acompanhe seus exames e consultas agendadas',
-                icon: Icons.notifications,
+                subtitle: 'Seus exames e consultas',
+                icon: Icons.notifications_active_rounded,
                 color: const Color(0xFF007BFF),
                 onTap: () {
                   Navigator.push(
@@ -157,15 +191,13 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
                   );
                 },
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               
-          
               AnimatedFeatureCard(
-                title: 'Notícia',
-                subtitle: 'Últimas novidades em saúde masculina',
-                icon: Icons.article,
-                color: const Color(0xFFE8F0FE), 
-                textColor: Colors.black, 
+                title: 'Notícias',
+                subtitle: 'Novidades em saúde',
+                icon: Icons.newspaper_rounded,
+                color: const Color(0xFF3B489A),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -173,38 +205,35 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
                   );
                 },
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               
-              // Card para a própria tela de Saúde Masculina (se houver conteúdo interno)
               AnimatedFeatureCard(
-                title: 'Saúde Masculina',
-                subtitle: 'Dicas, hobbies e hábitos saudáveis',
-                icon: Icons.monitor_heart,
-                color: const Color(0xFF007BFF),
-                onTap: () {
-                  // Se esta tela já exibe os conteúdos de saúde,
-                  // você pode não querer navegar para ela mesma.
-                  // Ou pode ter subseções que você navega aqui.
-                  // Por enquanto, farei um print ou apenas fecho o drawer se for o caso.
-                  print('Já estamos na tela de Saúde Masculina.');
-                },
-              ),
-              const SizedBox(height: 24),
-              
-              // --- AQUI VAI O CARD PARA A IA ---
-              AnimatedFeatureCard(
-                title: 'IA Horus', // Nome da sua IA
-                subtitle: 'Seu assistente inteligente de saúde',
-                icon: Icons.smart_toy,
-                color: const Color(0xFFE8F0FE), // Cor clara
-                textColor: Colors.black, // Texto preto para card claro
+                title: 'Guia de Saúde',
+                subtitle: 'Dicas, hobbies e prevenção',
+                icon: Icons.health_and_safety_rounded,
+                color: const Color(0xFF00BFA5),
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const IaChatScreen()), // NAVEGA PARA IA
+                    MaterialPageRoute(builder: (context) => const SaudeEducacionalScreen()),
                   );
                 },
               ),
+              const SizedBox(height: 20),
+              
+              AnimatedFeatureCard(
+                title: 'IA Horus', 
+                subtitle: 'Seu assistente inteligente',
+                icon: Icons.smart_toy_rounded,
+                color: const Color(0xFF651FFF),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const IaChatScreen()), 
+                  );
+                },
+              ),
+              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -213,7 +242,6 @@ class _SaudeHomemScreenState extends State<SaudeHomemScreen> {
   }
 }
 
-// Widget auxiliar para os cards animados (deve estar no mesmo arquivo ou em um separado importado)
 class AnimatedFeatureCard extends StatefulWidget {
   final String title;
   final String subtitle;
@@ -228,7 +256,7 @@ class AnimatedFeatureCard extends StatefulWidget {
     required this.subtitle,
     required this.icon,
     required this.color,
-    this.textColor = Colors.white, // Cor padrão do texto
+    this.textColor = Colors.white, 
     required this.onTap,
   });
 
@@ -239,22 +267,16 @@ class AnimatedFeatureCard extends StatefulWidget {
 class _AnimatedFeatureCardState extends State<AnimatedFeatureCard> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _shadowAnimation;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 150),
+      duration: const Duration(milliseconds: 100),
     );
-
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-
-    _shadowAnimation = Tween<double>(begin: 5.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
   }
 
@@ -264,71 +286,80 @@ class _AnimatedFeatureCardState extends State<AnimatedFeatureCard> with SingleTi
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails details) {
-    _controller.forward();
-  }
-
-  void _onTapUp(TapUpDetails details) {
-    _controller.reverse();
-    widget.onTap(); // Chama o onTap do widget pai
-  }
-
-  void _onTapCancel() {
-    _controller.reverse();
-  }
-
   @override
   Widget build(BuildContext context) {
+    final gradient = LinearGradient(
+      colors: [
+        widget.color.withOpacity(0.85), 
+        widget.color
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+
     return GestureDetector(
-      onTapDown: _onTapDown,
-      onTapUp: _onTapUp,
-      onTapCancel: _onTapCancel,
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) {
+        _controller.reverse();
+        widget.onTap();
+      },
+      onTapCancel: () => _controller.reverse(),
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
           return Transform.scale(
             scale: _scaleAnimation.value,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              height: 110,
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: widget.color,
-                borderRadius: BorderRadius.circular(20),
+                gradient: gradient,
+                borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.2 + (0.3 * (1 - _controller.value))),
-                    spreadRadius: 2,
-                    blurRadius: _shadowAnimation.value,
-                    offset: Offset(0, _shadowAnimation.value),
+                    color: widget.color.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
               child: Row(
                 children: [
-                  Icon(widget.icon, color: widget.textColor, size: 32),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(widget.icon, color: widget.textColor, size: 28),
+                  ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           widget.title,
                           style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
                             color: widget.textColor,
                           ),
                         ),
-                        const SizedBox(height: 4),
                         Text(
                           widget.subtitle,
                           style: TextStyle(
-                            fontSize: 14,
-                            color: widget.textColor.withAlpha(230), // Levemente transparente
+                            fontSize: 13,
+                            color: widget.textColor.withOpacity(0.9),
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
+                  Icon(Icons.arrow_forward_ios_rounded, color: widget.textColor.withOpacity(0.6), size: 18),
                 ],
               ),
             ),

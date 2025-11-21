@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Para formatação de data e nome do mês
-import 'package:provider/provider.dart'; // Para acessar o UserExamsProvider
-
-// Importações dos widgets e modelos personalizados
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../widgets/lembretes/month_selector.dart';
 import '../widgets/lembretes/search_bar.dart';
 import '../widgets/lembretes/exam_card.dart';
-import '../utils/app_extensions.dart'; // Para a extensão .capitalize()
+import '../utils/app_extensions.dart'; 
 import '../providers/user_exams_provider.dart';
-import '../models/exam.dart'; // Para os modelos Exam e ExamDay
-
-// 🟢 NOVAS IMPORTAÇÕES
+import '../models/exam.dart'; 
 import '../services/api_service.dart';
 import '../providers/auth_provider.dart';
 
@@ -22,29 +18,23 @@ class LembretesScreen extends StatefulWidget {
 }
 
 class _LembretesScreenState extends State<LembretesScreen> {
-  // Listas de meses para o seletor
   final List<String> meses = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
   ];
   
-  // Mapa para saber o número de dias em cada mês (simplificado)
   final Map<String, int> diasPorMes = {
     'Janeiro': 31, 'Fevereiro': 28, 'Março': 31, 'Abril': 30, 'Maio': 31, 'Junho': 30, 
     'Julho': 31, 'Agosto': 31, 'Setembro': 30, 'Outubro': 31, 'Novembro': 30, 'Dezembro': 31,
   };
 
-  // Variáveis de estado para o mês atual e o termo de pesquisa
   String mesAtual = 'Fevereiro'; 
   String termoDePesquisa = '';
 
   @override
   void initState() {
     super.initState();
-    // Define o mês inicial como o mês atual do sistema
     mesAtual = DateFormat('MMMM', 'pt_BR').format(DateTime.now()).capitalize();
-    
-    // Fallback caso o locale do sistema não retorne o nome do mês como esperado
     if (!meses.contains(mesAtual)) {
       final now = DateTime.now();
       mesAtual = meses[now.month - 1];
@@ -55,18 +45,16 @@ class _LembretesScreenState extends State<LembretesScreen> {
   Widget build(BuildContext context) {
     return Consumer<UserExamsProvider>(
       builder: (context, userExamsProvider, child) {
-        // Obtém os exames do mês atual do provider
         List<ExamDay> examesDoMes = userExamsProvider.getExamsForMonth(mesAtual);
-        // Aplica o filtro de pesquisa
         List<ExamDay> examesFiltrados = _filtrarExames(examesDoMes);
 
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFFF5F7FA),
           appBar: AppBar(
             backgroundColor: const Color(0xFF007BFF), 
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
               onPressed: () => Navigator.of(context).pop(),
             ),
             title: const Text('Lembretes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -78,14 +66,12 @@ class _LembretesScreenState extends State<LembretesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 16),
-                // Seletor de mês
                 MonthSelector(
                   meses: meses,
                   mesAtual: mesAtual,
                   onChangeMonth: _changeMonth,
                 ),
                 const SizedBox(height: 16),
-                // Barra de pesquisa
                 LembretesSearchBar(
                   onChanged: (value) => setState(() => termoDePesquisa = value),
                 ),
@@ -96,7 +82,7 @@ class _LembretesScreenState extends State<LembretesScreen> {
                     const Text('Exames', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                     IconButton(
                       onPressed: () => _showAddExamDialog(context),
-                      icon: const Icon(Icons.add_circle, color: Color(0xFF1A75B4), size: 30),
+                      icon: const Icon(Icons.add_circle, color: Color(0xFF007BFF), size: 36),
                     ),
                   ],
                 ),
@@ -108,8 +94,8 @@ class _LembretesScreenState extends State<LembretesScreen> {
                       child: Text(
                         termoDePesquisa.isEmpty 
                           ? 'Nenhum exame agendado para $mesAtual.' 
-                          : 'Nenhum resultado encontrado para "$termoDePesquisa".', 
-                        style: const TextStyle(fontSize: 16, color: Colors.grey),
+                          : 'Nenhum resultado encontrado.', 
+                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -186,7 +172,7 @@ class _LembretesScreenState extends State<LembretesScreen> {
     return day >= 1 && day <= maxDays;
   }
 
-  // 🟢 MÉTODO ATUALIZADO PARA AGENDAR NOTIFICAÇÃO
+  // 🟢 DIALOGO SIMPLIFICADO: Sem opção de recorrência
   void _showAddExamDialog(BuildContext context) {
     final nomeController = TextEditingController();
     final diaController = TextEditingController();
@@ -196,15 +182,33 @@ class _LembretesScreenState extends State<LembretesScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text('Adicionar Novo Exame'),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
             TextField(controller: nomeController, decoration: const InputDecoration(labelText: 'Nome do Exame')),
-            TextField(controller: diaController, decoration: InputDecoration(labelText: 'Dia (1-${diasPorMes[mesAtual]})'), keyboardType: TextInputType.number),
-            TextField(controller: observacaoController, decoration: const InputDecoration(labelText: 'Observação (Opcional)'), keyboardType: TextInputType.multiline, maxLines: null),
+            TextField(
+              controller: diaController, 
+              decoration: InputDecoration(labelText: 'Dia (1-${diasPorMes[mesAtual]})'), 
+              keyboardType: TextInputType.number
+            ),
+            TextField(
+              controller: observacaoController, 
+              decoration: const InputDecoration(labelText: 'Observação (Opcional)'), 
+              keyboardType: TextInputType.multiline, 
+              maxLines: null
+            ),
           ]),
           actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
             TextButton(
+              onPressed: () => Navigator.of(context).pop(), 
+              child: const Text('Cancelar')
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF007BFF),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
               onPressed: () async {
                 final nome = nomeController.text;
                 final dia = int.tryParse(diaController.text);
@@ -214,47 +218,40 @@ class _LembretesScreenState extends State<LembretesScreen> {
                   return;
                 }
                 if (dia == null || !_isDayValidForMonth(dia, mesAtual)) {
-                  _showAlertDialog('Erro', 'O dia é inválido para $mesAtual. Por favor, insira um dia entre 1 e ${diasPorMes[mesAtual]}.');
+                  _showAlertDialog('Erro', 'Dia inválido para $mesAtual.');
                   return;
                 }
 
-                // 1. Salvar Localmente (Provider)
+                // 1. Salva Localmente (Hive)
                 Provider.of<UserExamsProvider>(context, listen: false).addExam(
-                  mesAtual, dia, nome, observacaoController.text, 'Mensal'
+                  mesAtual, dia, nome, observacaoController.text
                 );
 
-                // 2. Agendar Notificação no Backend (Nova Lógica)
+                Navigator.of(context).pop();
+
+                // 2. Agenda Notificação no Backend
                 try {
                   final authProvider = Provider.of<AuthProvider>(context, listen: false);
                   final token = authProvider.accessToken;
 
                   if (token != null) {
-                    // Calcula a data completa
                     final int monthIndex = meses.indexOf(mesAtual) + 1;
                     final int currentYear = DateTime.now().year;
+                    final DateTime examDate = DateTime(currentYear, monthIndex, dia);
                     
-                    // Ajuste simples: se o mês já passou, assume que é para o próximo ano (opcional)
-                    int year = currentYear;
-                    if (monthIndex < DateTime.now().month || (monthIndex == DateTime.now().month && dia < DateTime.now().day)) {
-                       // Se quiser agendar pro ano que vem descomente abaixo, 
-                       // por enquanto deixamos no ano atual para o teste funcionar.
-                       // year = currentYear + 1; 
-                    }
-
-                    final DateTime examDate = DateTime(year, monthIndex, dia);
-                    
-                    // Chama o serviço
+                    // 🟢 Sem parâmetro de recorrência
                     await ApiService().scheduleExam(token, nome, examDate);
                     
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Lembrete salvo e notificação agendada!")),
+                      const SnackBar(
+                        content: Text("Lembrete salvo e notificação agendada!"),
+                        backgroundColor: Colors.green,
+                      ),
                     );
                   }
                 } catch (e) {
                   print("Erro ao agendar no backend: $e");
                 }
-
-                Navigator.of(context).pop();
               },
               child: const Text('Adicionar'),
             ),
@@ -268,69 +265,57 @@ class _LembretesScreenState extends State<LembretesScreen> {
     final nomeController = TextEditingController(text: exameParaEditar.nome);
     final diaController = TextEditingController(text: dia.toString());
     final observacaoController = TextEditingController(text: exameParaEditar.observacao);
-    String recorrenciaSelecionada = exameParaEditar.recorrencia;
 
     showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateSB) {
-            return AlertDialog(
-              title: const Text('Editar Exame'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(controller: nomeController, decoration: const InputDecoration(labelText: 'Nome do Exame')),
-                    TextField(controller: diaController, decoration: InputDecoration(labelText: 'Dia (1-${diasPorMes[mesAtual]})'), keyboardType: TextInputType.number),
-                    TextField(controller: observacaoController, decoration: const InputDecoration(labelText: 'Observações'), maxLines: null),
-                    const SizedBox(height: 16),
-                    const Text('Recorrência do Exame'),
-                    Wrap(
-                      spacing: 8.0,
-                      children: ['Mensal', 'Semanal', 'Anual'].map((recorrencia) {
-                        return ChoiceChip(
-                          label: Text(recorrencia),
-                          selected: recorrenciaSelecionada == recorrencia,
-                          onSelected: (selected) => setStateSB(() => recorrenciaSelecionada = recorrencia),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
-                TextButton(
-                  onPressed: () {
-                    final novoNome = nomeController.text;
-                    final novoDia = int.tryParse(diaController.text);
-                     if (novoNome.isEmpty) {
-                      _showAlertDialog('Erro', 'Por favor, insira o nome do exame.');
-                      return;
-                    }
-                    if (novoDia == null || !_isDayValidForMonth(novoDia, mesAtual)) {
-                      _showAlertDialog('Erro', 'O dia é inválido para $mesAtual. Por favor, insira um dia entre 1 e ${diasPorMes[mesAtual]}.');
-                      return;
-                    }
-
-                    final updatedExam = Exam(
-                      nome: novoNome,
-                      observacao: observacaoController.text,
-                      recorrencia: recorrenciaSelecionada,
-                      concluido: exameParaEditar.concluido,
-                    );
-
-                    Provider.of<UserExamsProvider>(context, listen: false).updateExam(
-                      mesAtual, dia, exameIndex, updatedExam, novoDia
-                    );
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Salvar'),
-                ),
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Editar Exame'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(controller: nomeController, decoration: const InputDecoration(labelText: 'Nome do Exame')),
+                TextField(controller: diaController, decoration: InputDecoration(labelText: 'Dia (1-${diasPorMes[mesAtual]})'), keyboardType: TextInputType.number),
+                TextField(controller: observacaoController, decoration: const InputDecoration(labelText: 'Observações'), maxLines: null),
               ],
-            );
-          },
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
+            ElevatedButton(
+              onPressed: () {
+                final novoNome = nomeController.text;
+                final novoDia = int.tryParse(diaController.text);
+                 if (novoNome.isEmpty) {
+                  _showAlertDialog('Erro', 'Por favor, insira o nome do exame.');
+                  return;
+                }
+                if (novoDia == null || !_isDayValidForMonth(novoDia, mesAtual)) {
+                  _showAlertDialog('Erro', 'Dia inválido.');
+                  return;
+                }
+
+                final updatedExam = Exam(
+                  nome: novoNome,
+                  observacao: observacaoController.text,
+                  recorrencia: "Padrão", // Valor fixo interno
+                  concluido: exameParaEditar.concluido,
+                );
+
+                Provider.of<UserExamsProvider>(context, listen: false).updateExam(
+                  mesAtual, dia, exameIndex, updatedExam, novoDia
+                );
+                Navigator.of(context).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF007BFF),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Salvar'),
+            ),
+          ],
         );
       },
     );

@@ -27,7 +27,6 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   void _submit() async {
-  
     if (_identifierController.text.isEmpty || _passwordController.text.isEmpty) {
       _showSnackbar('Por favor, preencha todos os campos.', isError: true);
       return;
@@ -87,7 +86,6 @@ class _LoginFormState extends State<LoginForm> {
                   controller: _identifierController,
                   decoration: const InputDecoration(
                     prefixIcon: Icon(Icons.person_outline, color: Colors.grey),
-                    // Correção aqui:
                     hintText: 'Seu e-mail ou nome de usuário',
                     hintStyle: TextStyle(color: Colors.grey),
                     border: InputBorder.none,
@@ -120,13 +118,16 @@ class _LoginFormState extends State<LoginForm> {
             ),
           ),
           const SizedBox(height: 16),
-          TextButton(
-            onPressed: () {
-              auth.animateForgotPasswordBox();
-            },
-            child: const Text(
-              'Esqueceu sua senha?',
-              style: TextStyle(color: Color(0xFF888888)),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () {
+                auth.animateForgotPasswordBox();
+              },
+              child: const Text(
+                'Esqueceu sua senha?',
+                style: TextStyle(color: Color(0xFF888888)),
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -139,11 +140,19 @@ class _LoginFormState extends State<LoginForm> {
                 backgroundColor: const Color(0xFF3B489A),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
+              // 🟢 CORREÇÃO AQUI: Tamanho fixo para o loader
               child: auth.isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2.5,
+                      ),
+                    )
                   : const Text(
                       'Login',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                     ),
             ),
           ),
